@@ -5,35 +5,28 @@
       <p class="title">{{product.title}}</p>
       <p class="price">￥{{product.price}}</p>
     </div>
-    <div class="goods-Info">
+    <div class="goods-info">
       <span>运费 ￥0.00</span>
       <span>库存 6000</span>
       <span>销量 5000件</span>
     </div>
-    <div class="color-box" @click="sColor">
-      <div class="color-select">选择</div>
-      <div class="color-details">
-        <div class="color-size">
-          <span>选择 颜色分类，尺寸</span>
-          <icon-font icon-class="icon-arrows" @click=" showColor=false" />
-        </div>
-        <div class="color-type">
-          <span class="color-tItem"></span>
-          <span class="color-tItem"></span>
-          <span class="color-tItems">共2种颜色分类可选</span>
-        </div>
-      </div>
+    <div class="model-choose" @click="sColor">
+      <span>已选</span>
+      <span class="model-details">黑色，一件</span>
+      <span>
+        <icon-font icon-class="icon-arrows" />
+      </span>
     </div>
-    <div class="body">
+    <div class="product-introduce">
       <img :src="product.productIntroduce" />
     </div>
-    <footer class="footer">
-      <div class="goShopping">
-        <span>
+    <footer>
+      <div class="shoppingOrCart">
+        <span @click="goShopping">
           <icon-font icon-class="menu-index" />
           <br />店铺
         </span>
-        <span>
+        <span @click="goCart">
           <icon-font icon-class="menu-car" />
           <br />购物车
         </span>
@@ -42,32 +35,44 @@
       <div class="buy-now" @click="showBuy = true">立刻购买</div>
     </footer>
     <div class="choose-type" v-if="showColor">
-      <div class="c-content">
+      <div class="choose-content">
         <span class="close-choose" @click="showColor = false">
           <icon-font icon-class="icon-close" />
         </span>
-        <div class="c-title">
-          <div class="c-imgbox">
-            <img src alt style="width:100%;height:100%" />
+        <div class="choose-title">
+          <div class="choose-imgbox">
+            <img src alt="商品图片" />
           </div>
-          <div class="c-right">
+          <div class="choose-product-info">
             <p class="price">￥1999.00</p>
             <p class="inventory">库存1500件</p>
-            <p class="s-color">选择 颜色</p>
           </div>
         </div>
-        <div class="c-classify">颜色 分类</div>
-        <div class="c-btn">
-          <p :class="active==1?'active btn-item':'btn-item'" @click="active=1">
-            <span class="bc-box"></span>
-            <span>黑色</span>
-          </p>
-          <p :class="active==2?'active btn-item':'btn-item'" @click="active=2">
-            <span class="bc-box"></span>
-            <span>玫瑰金</span>
+        <div class="choose-classify">
+          <div class="classify-title">颜色</div>
+          <div class="color-btn">
+            <p
+              v-for="(item, index) in colorList"
+              :key="index"
+              :class="activeColor==index ? 'active color-item':'color-item'"
+              @click="chooseColor(item, index)"
+            >{{item}}</p>
+          </div>
+        </div>
+        <div class="choose-number">
+          <p class="number-title">数量</p>
+          <p class="btn-number">
+            <span class="btn-reduce" @click="subtract">
+              <icon-font icon-class="icon-reduce" />
+            </span>
+            <span class="btn-ibox">
+              {{number}}
+            </span>
+            <span class="btn-add" @click="number++">
+              <icon-font icon-class="icon-add" />
+            </span>
           </p>
         </div>
-        <div class="c-classify">购买数量</div>
         <div class="c-btn"></div>
         <div class="gobuy" @click="sBuy">立刻购买</div>
       </div>
@@ -114,22 +119,30 @@ export default {
         price: "1990.00",
         productIntroduce: productTwo
       },
-      num: 1,
+      number: 1,
       showBuy: false,
       showColor: false,
-      active: ""
+      activeColor: 0,
+      colorList: ["白色", "黑色", "红色", "深空灰", "香槟金"],
+      productColor: ""
     };
   },
   methods: {
     subtract() {
-      if (this.num <= 1) {
-        this.num = 1;
+      if (this.number <= 1) {
+        this.number = 1;
         return;
       }
-      this.num--;
+      this.number--;
     },
     sColor() {
       this.showColor = true;
+    },
+    goShopping() {
+      alert("shouye");
+    },
+    goCart() {
+      alert("cart");
     },
     sBuy() {
       this.showBuy = true;
@@ -137,6 +150,10 @@ export default {
     },
     byMoney() {
       this.showBuy = false;
+    },
+    chooseColor(item, index) {
+      this.activeColor = index;
+      this.productColor = item;
     }
   },
   created() {
@@ -171,7 +188,7 @@ export default {
     font-weight: bold;
   }
 }
-.goods-Info {
+.goods-info {
   width: 100%;
   height: 80px;
   display: flex;
@@ -183,67 +200,40 @@ export default {
   padding: 0 8%;
   box-sizing: border-box;
 }
-.color-box {
-  padding: 0 4%;
+.model-choose {
+  padding: 20px 4%;
   box-sizing: border-box;
   display: flex;
   background-color: #fff;
-  .color-select {
-    font-size: 28px;
-    color: #9e9e9e;
-    margin-right: 15px;
+  font-size: 28px;
+  color: #333;
+  span:first-of-type {
+    font-weight: bold;
   }
-  .color-details {
+  .model-details {
     flex: 1;
-    .color-size {
-      display: flex;
-      justify-content: space-between;
-      font-size: 28px;
-      color: #1e1e1e;
-      padding-right: 10px;
-      box-sizing: border-box;
-    }
-    .color-type {
-      display: flex;
-      height: 66px;
-      margin: 20px 0;
-      .color-tItem {
-        height: 66px;
-        width: 66px;
-        border-radius: 5px;
-        overflow: hidden;
-        margin-right: 15px;
-        background-color: #ddd;
-      }
-      .color-tItems {
-        padding: 0 15 * @rem;
-        line-height: 40 * @rem;
-        font-size: 12 * @rem;
-        color: #bbb;
-        background-color: #2f2f2f;
-        border-radius: 5 * @rem;
-      }
-    }
+    margin: 0 40px;
+    text-align: justify;
   }
 }
-.body {
+.product-introduce {
   img {
     width: 100%;
   }
 }
-.footer {
+footer {
   width: 100%;
   height: 90px;
   display: flex;
   position: fixed;
   bottom: 0;
-  .goShopping {
+  background-color: #fff;
+  .shoppingOrCart {
     box-sizing: border-box;
     width: 260px;
     padding: 0 45px;
     display: flex;
     justify-content: space-between;
-    align-items: center;
     span {
       font-size: 24px;
       text-align: center;
@@ -274,7 +264,16 @@ export default {
   left: 0;
   top: 0;
   z-index: 666;
-  .c-content {
+  .choose-content {
+    text-align: left;
+    width: 100%;
+    background-color: #fff;
+    padding: 30px 4%;
+    box-sizing: border-box;
+    border-radius: 20px 20px 0 0;
+    position: absolute;
+    left: 0;
+    bottom: 0;
     .close-choose {
       position: absolute;
       right: 25px;
@@ -283,80 +282,110 @@ export default {
         font-size: 42px;
       }
     }
-    text-align: left;
-    width: 100%;
-    background-color: #fff;
-    padding: 15 * @rem;
-    box-sizing: border-box;
-    border-radius: 8 * @rem;
-    position: absolute;
-    left: 0;
-    bottom: 0;
-    .c-title {
+    .choose-title {
       width: 100%;
-      height: 90 * @rem;
+      height: 160px;
       display: flex;
-      .c-imgbox {
-        width: 90 * @rem;
-        height: 90 * @rem;
+      .choose-imgbox {
         background: red;
-        margin-right: 15 * @rem;
-        border-radius: 5 * @rem;
+        margin-right: 30px;
+        border-radius: 12px;
         overflow: hidden;
+        img {
+          display: block;
+          width: 160px;
+          height: 160px;
+        }
       }
-      .c-right {
+      .choose-product-info {
         flex: 1;
         text-align: left;
-        padding-top: 10 * @rem;
-        box-sizing: border-box;
+        vertical-align: bottom;
         .price {
           color: #a2313e;
           font-weight: bold;
-          font-size: 16 * @rem;
-          margin-bottom: 10 * @rem;
+          font-size: 32px;
+          margin-bottom: 20px;
         }
         .inventory {
-          font-size: 12 * @rem;
+          font-size: 24px;
           color: #5e5e5e;
-          margin-bottom: 10 * @rem;
-        }
-        .s-color {
-          font-size: 12 * @rem;
-          color: #9e9e9e;
         }
       }
     }
-    .c-classify {
-      font-size: 14 * @rem;
-      color: #9e9e9e;
-      margin: 15 * @rem 0;
+    .choose-classify {
+      padding-top: 40px;
+      .classify-title {
+        font-size: 24px;
+        color: #333;
+        font-weight: bold;
+        margin-bottom: 30px;
+      }
+      .color-btn {
+        display: flex;
+        flex-wrap: wrap;
+        margin-bottom: -20px;
+        margin-right: -30px;
+        .color-item {
+          width: 150px;
+          height: 50px;
+          margin-bottom: 20px;
+          margin-right: 30px;
+          border-radius: 100px;
+          background-color: #f2f2f2;
+          color: #333;
+          line-height: 50px;
+          text-align: center;
+          font-size: 24px;
+          box-sizing: border-box;
+        }
+        .color-item.active {
+          border: 1px solid #f2270c; /* no */
+          color: #f2270c;
+          background-color: #fcedeb;
+        }
+      }
     }
-    .c-btn {
+    .choose-number {
+      width: 100%;
       display: flex;
-      flex-wrap: wrap;
-      .btn-item {
-        width: 80 * @rem;
-        height: 30 * @rem;
-        margin-right: 15 * @rem;
-        border-radius: 3 * @rem;
-        background-color: #ccc;
-        line-height: 30 * @rem;
+      align-items: center;
+      justify-content: space-between;
+      padding-top: 40px;
+      .number-title {
+        font-size: 24px;
+        font-weight: bold;
+      }
+      .btn-number {
         display: flex;
         align-items: center;
-        padding: 0 5 * @rem;
-        box-sizing: border-box;
-        justify-content: space-between;
-        .bc-box {
-          width: 25 * @rem;
-          height: 20 * @rem;
-          background: #a2313e;
+        .btn-reduce {
+          color: #2e2d2d;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          .icon-font {
+            font-size: 24px;
+          }
         }
-        span {
+        .btn-add {
+          color: #2e2d2d;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          .icon-font {
+            font-size: 24px;
+          }
+        }
+        .btn-ibox {
+          width: 90px;
+          height: 50px;
+          line-height: 50px;
+          margin: 0 20px;
           font-size: 24px;
+          text-align: center;
+          background-color: #f2f2f2;
         }
-      }
-      .btn-item.active {
-        border: 1 * @rem solid red;
       }
     }
     .gobuy {
