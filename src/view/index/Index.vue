@@ -1,5 +1,5 @@
 <template>
-  <div id="index">
+  <div id="index" class="index">
     <mt-swipe :auto="4000" ref="swiper">
       <mt-swipe-item class="swiper-item" v-for="(item) in banner" :key="item.id">
         <a :href="item.link">
@@ -90,119 +90,123 @@ export default {
 </script>
 
 <style lang="less" scoped>
-.mint-swipe {
-  height: 370px;
-  .swiper-item a img {
-    width: 100%;
-  }
-}
-ul {
-  display: flex;
+.index {
+  position: absolute;
   width: 100%;
-  overflow: hidden;
-  background-color: #fff;
-  li {
-    flex: 1;
-    text-align: center;
-    font-size: 24px;
-    height: 70px;
-    span {
-      display: inline-block;
-      line-height: 70px;
-      vertical-align: middle;
-    }
-    .icon-font {
-      color: #fc2732;
-      vertical-align: middle;
-      margin-right: 5px;
+  .mint-swipe {
+    height: 370px;
+    .swiper-item a img {
+      width: 100%;
     }
   }
-}
-article,
-.recommend-product .product {
-  box-sizing: border-box;
-  width: 100%;
-  padding: 0 4%;
-  background-color: #fff;
-}
-article {
-  height: 70px;
-  background-color: #fff9ec;
-  .icon-font {
-    float: left;
-    color: #fc2732;
-    font-size: 30px;
-    margin: 18px 10px 0 0;
-  }
-}
-.recommend-product {
-  background-color: #fff;
-  margin-top: 20px;
-  .section-title {
-    width: 100%;
-    height: 100px;
-    line-height: 100px;
-    text-align: center;
-    font-size: 32px;
-    font-weight: bold;
-    border-bottom: 1px solid #d4d4d4; /* no */
-  }
-  .product {
-    height: 249px;
-    padding: 24px 4%;
-    overflow: hidden;
+  ul {
     display: flex;
-    border-bottom: 1px solid #d4d4d4; /* no */
-    .product-img {
-      display: inline-block;
-      width: 200px;
-      height: 200px;
-      margin-right: 20px;
-    }
-    .product-introduction {
+    width: 100%;
+    overflow: hidden;
+    background-color: #fff;
+    li {
       flex: 1;
-      position: relative;
-      display: inline-block;
-      height: 200px;
+      text-align: center;
+      font-size: 24px;
+      height: 70px;
+      span {
+        display: inline-block;
+        line-height: 70px;
+        vertical-align: middle;
+      }
+      .icon-font {
+        color: #fc2732;
+        vertical-align: middle;
+        margin-right: 5px;
+      }
+    }
+  }
+  article,
+  .recommend-product .product {
+    box-sizing: border-box;
+    width: 100%;
+    padding: 0 4%;
+    background-color: #fff;
+  }
+  article {
+    height: 70px;
+    background-color: #fff9ec;
+    .icon-font {
+      float: left;
+      color: #fc2732;
+      font-size: 30px;
+      margin: 18px 10px 0 0;
+    }
+  }
+  .recommend-product {
+    background-color: #fff;
+    margin-top: 20px;
+    .section-title {
+      width: 100%;
+      height: 100px;
+      line-height: 100px;
+      text-align: center;
+      font-size: 32px;
+      font-weight: bold;
+      border-bottom: 1px solid #d4d4d4; /* no */
+    }
+    .product {
+      height: 249px;
+      padding: 24px 4%;
       overflow: hidden;
-      p {
-        font-size: 24px;
+      display: flex;
+      border-bottom: 1px solid #d4d4d4; /* no */
+      .product-img {
+        display: inline-block;
+        width: 200px;
+        height: 200px;
+        margin-right: 20px;
       }
-      .product-name {
-        line-height: 36px;
-        font-weight: bold;
-      }
-      .product-feature {
-        color: #999;
-        line-height: 32px;
-      }
-      .product-sale {
-        position: absolute;
-        height: 50px;
-        width: 100%;
+      .product-introduction {
+        flex: 1;
+        position: relative;
+        display: inline-block;
+        height: 200px;
         overflow: hidden;
-        line-height: 50px;
-        bottom: 0;
-        .discounted-price {
-          font-size: 28px;
-          color: #fc2732;
+        p {
+          font-size: 24px;
         }
-        .original-price {
-          text-decoration: line-through;
+        .product-name {
+          line-height: 36px;
+          font-weight: bold;
         }
-        .sale-number {
+        .product-feature {
           color: #999;
-          margin-left: 30px;
+          line-height: 32px;
         }
-        .buy {
+        .product-sale {
           position: absolute;
-          right: 0;
-          top: 0;
-          width: 140px;
           height: 50px;
-          text-align: center;
-          background-color: #75b6b8;
-          color: #fff;
+          width: 100%;
+          overflow: hidden;
+          line-height: 50px;
+          bottom: 0;
+          .discounted-price {
+            font-size: 28px;
+            color: #fc2732;
+          }
+          .original-price {
+            text-decoration: line-through;
+          }
+          .sale-number {
+            color: #999;
+            margin-left: 30px;
+          }
+          .buy {
+            position: absolute;
+            right: 0;
+            top: 0;
+            width: 140px;
+            height: 50px;
+            text-align: center;
+            background-color: #75b6b8;
+            color: #fff;
+          }
         }
       }
     }

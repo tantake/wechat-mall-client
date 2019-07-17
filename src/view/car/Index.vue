@@ -1,5 +1,5 @@
 <template>
-  <div id="car">
+  <div id="car" class="car">
     this is car page
   </div>
 </template>
@@ -16,4 +16,8 @@ export default {
 </script>
 
 <style lang="less" scoped>
+.car{
+  position: absolute;
+  width: 100%;
+}
 </style>

@@ -34,8 +34,8 @@ export default new Router({
       component: Home
     },
     {
-      path: "/details",
-      name: "details",
+      path: "/sort/details",
+      name: "商品详情",
       component: () => import("@/view/sort/Details"),
       meta: {
         navShow: false

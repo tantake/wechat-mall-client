@@ -1,5 +1,5 @@
 <template>
-  <div id="sort">
+  <div id="sort" class="sort">
     <mt-navbar v-model="type">
       <mt-tab-item id="all">全部</mt-tab-item>
       <mt-tab-item id="520">520系列</mt-tab-item>
@@ -8,7 +8,12 @@
       <mt-tab-item id="other">其他</mt-tab-item>
     </mt-navbar>
     <section class="recommend-product">
-      <div class="product" v-for="(product, index) in productList" :key="index" @click="productDetails">
+      <div
+        class="product"
+        v-for="(product, index) in productList"
+        :key="index"
+        @click="productDetails"
+      >
         <img :src="product.productImg" class="product-img" />
         <div class="product-introduction">
           <p class="product-name">{{product.productName}}</p>
@@ -51,73 +56,77 @@ export default {
   },
   methods: {
     productDetails() {
-      this.$router.push("details");
+      this.$router.push("sort/details");
     }
   }
 };
 </script>
 
 <style lang="less" scoped>
-.recommend-product {
-  background-color: #fff;
-  margin-top: 20px;
-  .product {
-    box-sizing: border-box;
-    height: 249px;
-    padding: 24px 4%;
-    overflow: hidden;
-    display: flex;
-    border-bottom: 1px solid #d4d4d4; /* no */
-    .product-img {
-      display: inline-block;
-      width: 200px;
-      height: 200px;
-      margin-right: 20px;
-    }
-    .product-introduction {
-      flex: 1;
-      position: relative;
-      display: inline-block;
-      height: 200px;
+.sort {
+  position: absolute;
+  width: 100%;
+  .recommend-product {
+    background-color: #fff;
+    margin-top: 20px;
+    .product {
+      box-sizing: border-box;
+      height: 249px;
+      padding: 24px 4%;
       overflow: hidden;
-      p {
-        font-size: 24px;
+      display: flex;
+      border-bottom: 1px solid #d4d4d4; /* no */
+      .product-img {
+        display: inline-block;
+        width: 200px;
+        height: 200px;
+        margin-right: 20px;
       }
-      .product-name {
-        line-height: 36px;
-        font-weight: bold;
-      }
-      .product-feature {
-        color: #999;
-        line-height: 32px;
-      }
-      .product-sale {
-        position: absolute;
-        height: 50px;
-        width: 100%;
+      .product-introduction {
+        flex: 1;
+        position: relative;
+        display: inline-block;
+        height: 200px;
         overflow: hidden;
-        line-height: 50px;
-        bottom: 0;
-        .discounted-price {
-          font-size: 28px;
-          color: #fc2732;
+        p {
+          font-size: 24px;
         }
-        .original-price {
-          text-decoration: line-through;
+        .product-name {
+          line-height: 36px;
+          font-weight: bold;
         }
-        .sale-number {
+        .product-feature {
           color: #999;
-          margin-left: 30px;
+          line-height: 32px;
         }
-        .buy {
+        .product-sale {
           position: absolute;
-          right: 0;
-          top: 0;
-          width: 140px;
           height: 50px;
-          text-align: center;
-          background-color: #75b6b8;
-          color: #fff;
+          width: 100%;
+          overflow: hidden;
+          line-height: 50px;
+          bottom: 0;
+          .discounted-price {
+            font-size: 28px;
+            color: #fc2732;
+          }
+          .original-price {
+            text-decoration: line-through;
+          }
+          .sale-number {
+            color: #999;
+            margin-left: 30px;
+          }
+          .buy {
+            position: absolute;
+            right: 0;
+            top: 0;
+            width: 140px;
+            height: 50px;
+            text-align: center;
+            background-color: #75b6b8;
+            color: #fff;
+          }
         }
       }
     }
