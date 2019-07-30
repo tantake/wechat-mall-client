@@ -6,16 +6,20 @@
       </transition>
     </div>
     <footer-bar class="footer"></footer-bar>
+    <!-- <img :src="goodsImg" alt=""> -->
   </div>
 </template>
 
 <script>
 import Footer from "./components/FooterBar";
+import goodsImg from "@/assets/images/520L-introduce.jpg";
 export default {
   name: "App",
   data() {
     return {
-      transitionName: "fold-left"
+      transitionName: "fold-left",
+      pathArray: [],
+      goodsImg: goodsImg
     };
   },
   components: {
@@ -23,12 +27,16 @@ export default {
   },
   watch: {
     $route(to, from) {
+      this.$indicator.close();
       const toPath = to.path;
       const fromPath = from.path;
-      let routerType =
-        (toPath.indexOf(fromPath) && toPath.length > fromPath.length) ||
-        toPath.split("/").length - 1 >= fromPath.split("/").length - 1;
-      this.transitionName = routerType ? "fold-left" : "fold-right";
+      let isForward = true;
+      if (this.pathArray[0] === toPath) {
+        isForward = false;
+      }
+      this.pathArray[0] = fromPath;
+      this.pathArray[1] = toPath;
+      this.transitionName = isForward ? "fold-left" : "fold-right";
     }
   }
 };

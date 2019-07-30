@@ -8,47 +8,55 @@
     </header>
     <section>
       <div class="menu">
-        <icon-font icon-class="my-order" />
-        <span>我的订单</span>
-        <icon-font class="arrows" icon-class="arrow-right" />
+        <router-link to="home/order/all">
+          <icon-font icon-class="my-order" />
+          <span>我的订单</span>
+          <icon-font class="arrows" icon-class="arrow-right" />
+        </router-link>
       </div>
       <ul>
         <li>
-          <a href>
+          <router-link to="home/order/pendingPayment">
             <icon-font icon-class="wait-pay" />
             <p>待付款</p>
-          </a>
+          </router-link>
         </li>
         <li>
-          <a href>
+          <router-link to="home/order/pendingReceipt">
             <icon-font icon-class="wait-ship" />
             <p>待发货</p>
-          </a>
+          </router-link>
         </li>
         <li>
-          <a href>
+          <router-link to="home/order/completed">
             <icon-font icon-class="wait-receipt" />
             <p>待收货</p>
-          </a>
+          </router-link>
         </li>
         <li>
-          <a href>
+          <router-link to="home/order/all">
             <icon-font icon-class="wait-evaluation" />
             <p>待评价</p>
-          </a>
+          </router-link>
         </li>
       </ul>
       <div class="menu">
-        <icon-font icon-class="address" />
-        <span>收货地址</span>
+        <router-link to="/address/index">
+          <icon-font icon-class="address" />
+          <span>收货地址</span>
+        </router-link>
       </div>
       <div class="menu">
-        <icon-font icon-class="contact-us" />
-        <span>联系我们</span>
+        <router-link to="/home/address">
+          <icon-font icon-class="contact-us" />
+          <span>联系我们</span>
+        </router-link>
       </div>
       <div class="menu last-menu">
-        <icon-font icon-class="about-us" />
-        <span>关于我们</span>
+        <router-link to="/home/address">
+          <icon-font icon-class="about-us" />
+          <span>关于我们</span>
+        </router-link>
       </div>
     </section>
     <section></section>
@@ -146,25 +154,28 @@ export default {
     padding: 0 4%;
     .menu {
       width: 100%;
-      padding: 0 10px;
       height: 96px;
       box-sizing: border-box;
       font-size: 0;
       line-height: 96px;
       border-bottom: 1px solid #dddddd; /* no */
-      .icon-font {
-        font-size: 36px;
-        vertical-align: middle;
-      }
-      .arrows {
-        float: right;
-        margin-top: 32px;
-      }
-      span {
-        display: inline-block;
-        font-size: 28px;
-        vertical-align: middle;
-        margin-left: 10px;
+      a {
+        display: block;
+        color: #333;
+        .icon-font {
+          font-size: 36px;
+          vertical-align: middle;
+        }
+        .arrows {
+          float: right;
+          margin-top: 32px;
+        }
+        span {
+          display: inline-block;
+          font-size: 28px;
+          vertical-align: middle;
+          margin-left: 10px;
+        }
       }
     }
     .last-menu {

@@ -1,5 +1,9 @@
-import index from './index/index'
+import user from './user/index'
+import goods from './goods/index'
+import pay from './pay/index'
 
 export default {
-  index
+  user,
+  goods,
+  pay
 }

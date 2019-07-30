@@ -27,15 +27,21 @@
     </article>
     <section class="recommend-product">
       <p class="section-title">推荐产品</p>
-      <div class="product" v-for="(product, index) in recommendedProducts" :key="index">
-        <img :src="product.productImg" class="product-img" />
+      <div
+        class="product"
+        v-for="(product, index) in recommendedProducts"
+        :key="index"
+        @click="buy(product.goodsId)"
+      >
+        <img v-if="product.goodsAlbum" :src="product.goodsAlbum.goodsShortPic" class="product-img" />
+        <img v-else :src="goodsImg" class="product-img" />
         <div class="product-introduction">
-          <p class="product-name">{{product.productName}}</p>
+          <p class="product-name">{{product.goodsName}}</p>
           <p class="product-feature">{{product.productFeature}}</p>
           <p class="product-sale">
-            <span class="discounted-price">￥{{product.discountedPrice}}</span>
-            <span class="original-price">￥{{product.originalPrice}}</span>
-            <span class="sale-number">已购{{product.saleNumber}}件</span>
+            <span class="discounted-price">￥{{product.goodsPrice}}</span>
+            <span class="original-price">￥{{product.goodsRetailPrice}}</span>
+            <span class="sale-number">已购{{product.payTotal}}件</span>
             <span class="buy">去购买</span>
           </p>
         </div>
@@ -49,8 +55,7 @@
 import img1 from "@/assets/images/banner1.jpg";
 import img2 from "@/assets/images/banner2.jpg";
 import img3 from "@/assets/images/banner3.jpg";
-import productOne from "@/assets/images/520L.jpg";
-import productTwo from "@/assets/images/520X.jpg";
+import goodsImg from "@/assets/images/520X.jpg";
 import Marquee from "../../components/Marquee";
 export default {
   data() {
@@ -61,31 +66,35 @@ export default {
         { id: 3, title: "banner3", img: img3, link: "#" }
       ],
       bulletin: "壹柯米科技，专注中国智能锁行业，守护你的安全",
-      recommendedProducts: [
-        {
-          productImg: productOne,
-          productName: "520L",
-          productFeature: "简约大方，安全可靠",
-          discountedPrice: 1299,
-          originalPrice: 1399,
-          saleNumber: 89
-        },
-        {
-          productImg: productTwo,
-          productName: "520X",
-          productFeature: "一握即开，带来的不只是方便，还有内在的安全",
-          discountedPrice: 1799,
-          originalPrice: 1999,
-          saleNumber: 159
-        }
-      ]
+      recommendedProducts: [],
+      goodsImg: goodsImg
     };
   },
   components: {
     Marquee
   },
-  methods: {},
-  mounted() {}
+  methods: {
+    async init() {
+      try {
+        this.$indicator.open({
+          text: "加载中...",
+          spinnerType: "fading-circle"
+        });
+        this.recommendedProducts = await this.$api.goods.goodsList();
+        this.$indicator.close();
+      } catch (e) {
+        console.log("​catch -> e", e);
+        this.$indicator.close();
+        this.$messagebox("", "网络异常");
+      }
+    },
+    buy(goodsId) {
+      this.$router.push(`/sort/details/${goodsId}`);
+    }
+  },
+  async mounted() {
+    this.init();
+  }
 };
 </script>
 
@@ -181,10 +190,11 @@ export default {
         }
         .product-sale {
           position: absolute;
+          display: flex;
+          align-items: center;
           height: 50px;
           width: 100%;
           overflow: hidden;
-          line-height: 50px;
           bottom: 0;
           .discounted-price {
             font-size: 28px;
@@ -195,16 +205,20 @@ export default {
           }
           .sale-number {
             color: #999;
-            margin-left: 30px;
+            font-size: 20px;
+            margin-left: 20px;
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            flex: 1;
           }
           .buy {
-            position: absolute;
-            right: 0;
-            top: 0;
             width: 140px;
             height: 50px;
+            line-height: 50px;
             text-align: center;
-            background-color: #75b6b8;
+            background-color: #f20100;
+            border-radius: 100px;
             color: #fff;
           }
         }

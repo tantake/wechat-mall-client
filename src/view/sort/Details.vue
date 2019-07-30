@@ -1,24 +1,24 @@
 <template>
   <div class="product-details">
-    <img :src="product.productImg" class="product-img" />
+    <img v-if="goodsDetail.goodsAlbum" :src="goodsDetail.goodsAlbum.goodsMainPic" alt="商品图片" class="product-img" />
     <div class="goods-details">
-      <p class="title">{{product.title}}</p>
-      <p class="price">￥{{product.price}}</p>
+      <p class="title">{{goodsDetail.goodsName}}</p>
+      <p class="price">￥{{goodsDetail.goodsRetailPrice}}</p>
     </div>
     <div class="goods-info">
-      <span>运费 ￥0.00</span>
-      <span>库存 6000</span>
+      <span>运费 ￥{{goodsDetail.shipAmount}}.00</span>
+      <span>库存 {{goodsDetail.goodsStock}}件</span>
       <span>销量 5000件</span>
     </div>
     <div class="model-choose" @click="chooseProductModel">
       <span>已选</span>
-      <span class="model-details">{{activeColor}}，{{number}}件</span>
+      <span class="model-details">{{buyNowInfo.activeColor}}，{{buyNowInfo.number}}件</span>
       <span>
         <icon-font icon-class="arrow-right" />
       </span>
     </div>
     <div class="product-introduce">
-      <img :src="product.productIntroduce" />
+      <img v-if="goodsDetail.goodsAlbum" :src="goodsDetail.goodsAlbum.goodsLongPic" />
     </div>
     <footer>
       <div class="shoppingOrCart">
@@ -41,20 +41,20 @@
         </span>
         <div class="choose-title">
           <div class="choose-imgbox">
-            <img :src="product.productSmall" alt="商品图片" />
+            <img v-if="goodsDetail.goodsAlbum" :src="goodsDetail.goodsAlbum.goodsShortPic" alt="商品图片" />
           </div>
           <div class="choose-product-info">
-            <p class="price">￥{{product.price}}</p>
-            <p class="inventory">库存{{product.saleNumber}}件</p>
+            <p class="price">￥{{goodsDetail.goodsRetailPrice}}</p>
+            <p class="inventory">库存{{goodsDetail.goodsStock}}件</p>
           </div>
         </div>
         <div class="choose-classify">
           <div class="classify-title">颜色</div>
           <div class="color-btn">
             <p
-              v-for="(item, index) in product.colorList"
+              v-for="(item, index) in goodsDetail.attrVal"
               :key="index"
-              :class="activeColor==item ? 'active color-item':'color-item'"
+              :class="buyNowInfo.activeColor==item ? 'active color-item':'color-item'"
               @click="chooseColor(item)"
             >{{item}}</p>
           </div>
@@ -65,7 +65,7 @@
             <span class="btn-reduce" @click="reduce">
               <icon-font icon-class="reduce" />
             </span>
-            <span class="number-box">{{number}}</span>
+            <span class="number-box">{{buyNowInfo.number}}</span>
             <span class="btn-add" @click="add">
               <icon-font icon-class="add" />
             </span>
@@ -87,26 +87,18 @@
 </template>
 
 <script>
-import productOne from "@/assets/images/520L-details.jpg";
-import productTwo from "@/assets/images/520L-introduce.jpg";
-import productThree from "@/assets/images/520L.jpg";
 export default {
   data() {
     return {
-      product: {
-        productImg: productOne,
-        title: "壹柯米iLock 550X 72小时发货",
-        price: "1990.00",
-        productIntroduce: productTwo,
-        productSmall: productThree,
-        saleNumber: 8,
-        colorList: ["白色", "黑色", "红色", "深空灰", "香槟金"]
-      },
+      goodsDetail: {},
       number: 1,
       showChoose: false,
       chooseType: "",
-      activeColor: "白色",
-      productColor: ""
+      productColor: "",
+      buyNowInfo: {
+        activeColor: "",
+        number: 1
+      }
     };
   },
   methods: {
@@ -115,47 +107,70 @@ export default {
       this.chooseType = "choose";
     },
     joinCart() {
-      this.showChoose = true;
-      this.chooseType = "joinCart";
+      alert("购物车功能暂未开放");
+      /* this.showChoose = true;
+      this.chooseType = "joinCart"; */
     },
     buyNow() {
       this.showChoose = true;
       this.chooseType = "buyNow";
     },
     goShopping() {
-      alert("shouye");
+      this.$router.push("/index");
     },
     goCart() {
-      alert("cart");
+      alert("购物车功能暂未开放");
     },
     chooseColor(item) {
-      this.activeColor = item;
+      this.buyNowInfo.activeColor = item;
     },
     reduce() {
-      if (this.number <= 1) {
-        this.number = 1;
+      if (this.buyNowInfo.number <= 1) {
+        this.buyNowInfo.number = 1;
         return;
       }
-      this.number--;
+      this.buyNowInfo.number--;
     },
     add() {
-      if (this.number >= this.product.saleNumber) {
-        this.number = this.product.saleNumber;
+      if (this.buyNowInfo.number >= this.goodsDetail.goodsStock) {
+        this.buyNowInfo.number = this.goodsDetail.goodsStock;
         return;
       }
-      this.number++;
+      this.buyNowInfo.number++;
     },
-    finishChoose(type) {
+    async finishChoose(type) {
       if (type === "joinCart") {
-        alert("加入购物车");
+        this.showChoose = false;
       }
       if (type === "buyNow") {
-        alert("前往结算页面");
+        await this.$db.setItem("buyNowInfo", this.buyNowInfo);
+        this.$router.push(`/order/settlement/${this.goodsDetail.goodsId}`);
+      }
+    },
+    async init() {
+      try {
+        this.$indicator.open({
+          text: "加载中...",
+          spinnerType: "fading-circle"
+        });
+        this.goodsDetail = await this.$api.goods.goodsDetail({
+          goodsId: this.$route.params.id
+        });
+        console.log(this.goodsDetail)
+        this.buyNowInfo.activeColor = this.goodsDetail.attrVal[0];
+        this.$indicator.close();
+      } catch (e) {
+        this.$indicator.close();
+        this.$messagebox("", "网络异常");
+        console.log("​catch -> e", e);
       }
     }
   },
   created() {
     //  this.$indicator.open()
+  },
+  mounted() {
+    this.init();
   }
 };
 </script>
@@ -167,6 +182,8 @@ export default {
   .product-img {
     display: block;
     width: 100%;
+    height: 750px;
+    background-color: red;
   }
   .goods-details {
     text-align: left;

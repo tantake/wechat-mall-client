@@ -124,7 +124,8 @@ export default {
             width: 140px;
             height: 50px;
             text-align: center;
-            background-color: #75b6b8;
+            background-color: #f20100;
+            border-radius: 100px;
             color: #fff;
           }
         }

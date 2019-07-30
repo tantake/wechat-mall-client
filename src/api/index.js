@@ -5,6 +5,7 @@ const install = function(Vue) {
     return
   }
   install.installed = true
+  window.$api = api;
   Object.defineProperties(Vue.prototype, {
     $api: {
       get() {

@@ -1,6 +1,6 @@
 <template>
   <div id="car" class="car">
-    this is car page
+    该功能暂未开放
   </div>
 </template>
 
