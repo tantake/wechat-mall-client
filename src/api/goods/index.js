@@ -6,7 +6,7 @@ const header = {}
 export default {
   // 请求商品列表
   goodsList(params) {
-    return api.get(urls.goodsList, params, header)
+    return api.post(urls.goodsList, params, header)
   },
   // 请求商品详情
   goodsDetail(params) {

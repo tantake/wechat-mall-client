@@ -8,7 +8,7 @@
     </header>
     <section>
       <div class="menu">
-        <router-link to="home/order/all">
+        <router-link to="/order/index/all">
           <icon-font icon-class="my-order" />
           <span>我的订单</span>
           <icon-font class="arrows" icon-class="arrow-right" />
@@ -16,25 +16,25 @@
       </div>
       <ul>
         <li>
-          <router-link to="home/order/pendingPayment">
+          <router-link to="/order/index/pendingPayment">
             <icon-font icon-class="wait-pay" />
             <p>待付款</p>
           </router-link>
         </li>
         <li>
-          <router-link to="home/order/pendingReceipt">
+          <router-link to="/order/index/pendingShip">
             <icon-font icon-class="wait-ship" />
             <p>待发货</p>
           </router-link>
         </li>
         <li>
-          <router-link to="home/order/completed">
+          <router-link to="/order/index/pendingReceipt">
             <icon-font icon-class="wait-receipt" />
             <p>待收货</p>
           </router-link>
         </li>
         <li>
-          <router-link to="home/order/all">
+          <router-link to="/order/index/pendingShip">
             <icon-font icon-class="wait-evaluation" />
             <p>待评价</p>
           </router-link>

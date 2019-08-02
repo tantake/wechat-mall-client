@@ -2,25 +2,26 @@
   <div id="sort" class="sort">
     <mt-navbar v-model="type">
       <mt-tab-item id="all">全部</mt-tab-item>
-      <mt-tab-item id="520">520系列</mt-tab-item>
-      <mt-tab-item id="550">550系列</mt-tab-item>
-      <mt-tab-item id="580">580系列</mt-tab-item>
-      <mt-tab-item id="other">其他</mt-tab-item>
+      <mt-tab-item id="1">520系列</mt-tab-item>
+      <mt-tab-item id="2">530系列</mt-tab-item>
+      <mt-tab-item id="3">550系列</mt-tab-item>
+      <mt-tab-item id="4">580系列</mt-tab-item>
     </mt-navbar>
-    <section class="recommend-product">
+    <section class="goods-list">
       <div
-        class="product"
-        v-for="(product, index) in productList"
+        class="goods"
+        v-for="(goods, index) in productList"
         :key="index"
-        @click="productDetails"
+        @click="buy(goods.goodsId)"
       >
-        <img :src="product.productImg" class="product-img" />
-        <div class="product-introduction">
-          <p class="product-name">{{product.productName}}</p>
-          <p class="product-feature">{{product.productFeature}}</p>
-          <p class="product-sale">
-            <span class="discounted-price">￥{{product.discountedPrice}}</span>
-            <span class="sale-number">已购{{product.saleNumber}}件</span>
+        <img v-if="goods.goodsAlbum" :src="goods.goodsAlbum.goodsShortPic" class="goods-img" />
+        <img v-else :src="goodsImg" class="goods-img" />
+        <div class="goods-introduction">
+          <p class="goods-name">{{goods.goodsName}}</p>
+          <p class="goods-feature">{{goods.goodsSubtitle}}</p>
+          <p class="goods-sale">
+            <span class="discounted-price">￥{{goods.goodsRetailPrice}}</span>
+            <span class="sale-number">已购{{goods.payTotal}}件</span>
             <span class="buy">去购买</span>
           </p>
         </div>
@@ -30,34 +31,48 @@
 </template>
 
 <script>
-import productOne from "@/assets/images/520L.jpg";
-import productTwo from "@/assets/images/520X.jpg";
+import goodsImg from "@/assets/images/520X.jpg";
 export default {
   data() {
     return {
       type: "all",
-      productList: [
-        {
-          productImg: productOne,
-          productName: "520L",
-          productFeature: "简约大方，安全可靠",
-          discountedPrice: 1299,
-          saleNumber: 89
-        },
-        {
-          productImg: productTwo,
-          productName: "520X",
-          productFeature: "一握即开，带来的不只是方便，还有内在的安全",
-          discountedPrice: 1799,
-          saleNumber: 159
-        }
-      ]
+      productList: [],
+      goodsImg: goodsImg
     };
   },
   methods: {
-    productDetails() {
-      this.$router.push("sort/details");
+    init() {
+      this.getGoodsList();
+    },
+    async getGoodsList(val) {
+      const type = val || this.type;
+      console.log("获取" + val);
+      try {
+        this.$indicator.open({
+          text: "加载中...",
+          spinnerType: "fading-circle"
+        });
+        const res = await this.$api.goods.goodsList({ type: type });
+        console.log(res);
+        this.productList = res;
+        this.$indicator.close();
+      } catch (e) {
+        console.log("​catch -> e", e);
+        this.$indicator.close();
+        this.$messagebox("", "网络异常");
+      }
+    },
+    buy(goodsId) {
+      this.$router.push(`/common/detail/${goodsId}`);
     }
+  },
+  watch: {
+    type: async function(val) {
+      this.getGoodsList(val);
+    }
+  },
+  mounted() {
+    this.init();
   }
 };
 </script>
@@ -66,23 +81,24 @@ export default {
 .sort {
   position: absolute;
   width: 100%;
-  .recommend-product {
+  padding-bottom: 120px;
+  .goods-list {
     background-color: #fff;
     margin-top: 20px;
-    .product {
+    .goods {
       box-sizing: border-box;
       height: 249px;
       padding: 24px 4%;
       overflow: hidden;
       display: flex;
       border-bottom: 1px solid #d4d4d4; /* no */
-      .product-img {
+      .goods-img {
         display: inline-block;
         width: 200px;
         height: 200px;
         margin-right: 20px;
       }
-      .product-introduction {
+      .goods-introduction {
         flex: 1;
         position: relative;
         display: inline-block;
@@ -91,15 +107,15 @@ export default {
         p {
           font-size: 24px;
         }
-        .product-name {
+        .goods-name {
           line-height: 36px;
           font-weight: bold;
         }
-        .product-feature {
+        .goods-feature {
           color: #999;
           line-height: 32px;
         }
-        .product-sale {
+        .goods-sale {
           position: absolute;
           height: 50px;
           width: 100%;

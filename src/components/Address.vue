@@ -1,9 +1,12 @@
 <template>
   <div class="address-picker">
-    <p @click="isShow = true" class="address-details">{{province}}{{city}}{{county}}</p>
+    <p
+      @click="chooseAddress()"
+      class="address-details"
+    >{{address.province}}&nbsp;&nbsp;{{address.city}}&nbsp;&nbsp;{{address.district}}</p>
     <div v-show="isShow" class="picker-box">
       <div class="picker-city">
-        <p class="confirm-btn" @click="isShow = false">确定</p>
+        <p class="confirm-btn" @click="addressPicker()">确定</p>
         <mt-picker :slots="addressSlots" @change="AddressChange"></mt-picker>
       </div>
     </div>
@@ -21,35 +24,92 @@ export default {
     return {
       isShow: false,
       addressSlots: [],
-      province: "",
-      city: "",
-      county: ""
+      address: {
+        province: "",
+        city: "",
+        district: ""
+      }
     };
   },
-  created() {
-    // console.log(Object.keys(address));
+  watch: {
+    userAddress: {
+      handler: function(newValue, oldValue) {
+        if (newValue.addressId) {
+          this.address = newValue;
+          this.pickerInit();
+        }
+      },
+      deep: true
+    }
   },
   methods: {
+    addressPicker() {
+      this.isShow = false;
+      this.$emit("addressPicker", this.address);
+    },
     AddressChange(picker, values) {
       if (address[values[0]]) {
         picker.setSlotValues(1, Object.keys(address[values[0]]));
         picker.setSlotValues(2, address[values[0]][values[1]]);
-        this.province = values[0];
-        this.city = values[1];
-        this.county = values[2];
+        this.address.province = values[0];
+        this.address.city = values[1];
+        this.address.district = values[2];
       }
     },
-    pickerInit() {}
-  },
-  mounted() {
-    this.$nextTick(() => {
-      if (this.userAddress) {
-        let province = this.userAddress.province;
-        let city = this.userAddress.city;
-        let county = this.userAddress.county;
-        this.province = province;
-        this.city = city;
-        this.county = county;
+    chooseAddress() {
+      this.isShow = true;
+      this.$nextTick(() => {
+        if (
+          this.address.addressId === undefined &&
+          this.address.province === ""
+        ) {
+          this.address.province = "北京市";
+          this.address.city = "市辖区";
+          this.address.district = "东城区";
+        }
+      });
+    },
+    addressInit() {
+      this.addressSlots = [
+        {
+          flex: 1,
+          defaultIndex: 0,
+          values: Object.keys(address),
+          className: "slot1",
+          textAlign: "center",
+          fontSize: "15px"
+        },
+        {
+          divider: true,
+          content: "-",
+          className: "slot2"
+        },
+        {
+          flex: 1,
+          defaultIndex: 0,
+          values: Object.keys(address["北京市"]),
+          className: "slot3",
+          textAlign: "center"
+        },
+        {
+          divider: true,
+          content: "-",
+          className: "slot4"
+        },
+        {
+          flex: 1,
+          defaultIndex: 0,
+          values: address["北京市"]["市辖区"],
+          className: "slot5",
+          textAlign: "center"
+        }
+      ];
+    },
+    pickerInit() {
+      this.$nextTick(() => {
+        let province = this.address.province;
+        let city = this.address.city;
+        let county = this.address.district;
         this.addressSlots = [
           {
             flex: 1,
@@ -84,56 +144,20 @@ export default {
             textAlign: "center"
           }
         ];
-      } else {
-        this.addressSlots = [
-          {
-            flex: 1,
-            defaultIndex: 0,
-            values: Object.keys(address),
-            className: "slot1",
-            textAlign: "center",
-            fontSize: "15px"
-          },
-          {
-            divider: true,
-            content: "-",
-            className: "slot2"
-          },
-          {
-            flex: 1,
-            defaultIndex: 0,
-            values: Object.keys(address["北京市"]),
-            className: "slot3",
-            textAlign: "center"
-          },
-          {
-            divider: true,
-            content: "-",
-            className: "slot4"
-          },
-          {
-            flex: 1,
-            defaultIndex: 0,
-            values: address["北京市"]["市辖区"],
-            className: "slot5",
-            textAlign: "center"
-          }
-        ];
-      }
-    });
+      });
+    }
+  },
+  mounted() {
+    this.addressInit();
   }
 };
 </script>
-
-<style lang="less">
-@import "../assets/css/myMint.less";
-</style>
 
 <style lang="less" scoped>
 .address-picker {
   flex: 1;
   .address-details {
-    font-weight: bold;
+    color: #555;
     font-size: 28px;
   }
   .picker-box {
@@ -157,11 +181,15 @@ export default {
         line-height: 90px;
         text-align: right;
         color: red;
-        font-size: 32px;
+        font-size: 28px;
+        font-weight: bold;
         border-bottom: 1px solid #f1f1f1; /* no */
       }
       .picker {
         width: 100%;
+        /deep/.picker-slot {
+          font-size: 28px;
+        }
       }
     }
   }

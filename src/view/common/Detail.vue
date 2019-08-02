@@ -1,6 +1,11 @@
 <template>
   <div class="product-details">
-    <img v-if="goodsDetail.goodsAlbum" :src="goodsDetail.goodsAlbum.goodsMainPic" alt="商品图片" class="product-img" />
+    <img
+      v-if="goodsDetail.goodsAlbum && goodsDetail.goodsAlbum.goodsMainPic"
+      :src="goodsDetail.goodsAlbum.goodsMainPic"
+      alt="商品图片"
+      class="product-img"
+    />
     <div class="goods-details">
       <p class="title">{{goodsDetail.goodsName}}</p>
       <p class="price">￥{{goodsDetail.goodsRetailPrice}}</p>
@@ -41,7 +46,11 @@
         </span>
         <div class="choose-title">
           <div class="choose-imgbox">
-            <img v-if="goodsDetail.goodsAlbum" :src="goodsDetail.goodsAlbum.goodsShortPic" alt="商品图片" />
+            <img
+              v-if="goodsDetail.goodsAlbum"
+              :src="goodsDetail.goodsAlbum.goodsShortPic"
+              alt="商品图片"
+            />
           </div>
           <div class="choose-product-info">
             <p class="price">￥{{goodsDetail.goodsRetailPrice}}</p>
@@ -54,7 +63,7 @@
             <p
               v-for="(item, index) in goodsDetail.attrVal"
               :key="index"
-              :class="buyNowInfo.activeColor==item ? 'active color-item':'color-item'"
+              :class="buyNowInfo.color===item ? 'active color-item':'color-item'"
               @click="chooseColor(item)"
             >{{item}}</p>
           </div>
@@ -96,12 +105,15 @@ export default {
       chooseType: "",
       productColor: "",
       buyNowInfo: {
-        activeColor: "",
-        number: 1
+        color: "",
+        number: 1,
       }
     };
   },
   methods: {
+    init() {
+      this.getGoodsInfo();
+    },
     chooseProductModel() {
       this.showChoose = true;
       this.chooseType = "choose";
@@ -122,7 +134,7 @@ export default {
       alert("购物车功能暂未开放");
     },
     chooseColor(item) {
-      this.buyNowInfo.activeColor = item;
+      this.buyNowInfo.color = item;
     },
     reduce() {
       if (this.buyNowInfo.number <= 1) {
@@ -138,25 +150,28 @@ export default {
       }
       this.buyNowInfo.number++;
     },
-    async finishChoose(type) {
+    finishChoose(type) {
       if (type === "joinCart") {
-        this.showChoose = false;
+        // this.showChoose = false;
+        alert("购物车功能暂未开放");
       }
       if (type === "buyNow") {
-        await this.$db.setItem("buyNowInfo", this.buyNowInfo);
-        this.$router.push(`/order/settlement/${this.goodsDetail.goodsId}`);
+        this.$store.dispatch("setBuyNowGoodsInfo", this.buyNowInfo);
+        this.$router.push(`/common/checkOrder/${this.goodsDetail.goodsId}`);
       }
     },
-    async init() {
+    async getGoodsInfo() {
       try {
         this.$indicator.open({
           text: "加载中...",
           spinnerType: "fading-circle"
         });
-        this.goodsDetail = await this.$api.goods.goodsDetail({
+        const res = await this.$api.goods.goodsDetail({
           goodsId: this.$route.params.id
         });
-        console.log(this.goodsDetail)
+        this.goodsDetail = res;
+        this.$lodash.assign(this.buyNowInfo, this.goodsDetail);
+        console.log(this.buyNowInfo);
         this.buyNowInfo.activeColor = this.goodsDetail.attrVal[0];
         this.$indicator.close();
       } catch (e) {
@@ -165,9 +180,6 @@ export default {
         console.log("​catch -> e", e);
       }
     }
-  },
-  created() {
-    //  this.$indicator.open()
   },
   mounted() {
     this.init();

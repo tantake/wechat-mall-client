@@ -37,11 +37,11 @@
         <img v-else :src="goodsImg" class="product-img" />
         <div class="product-introduction">
           <p class="product-name">{{product.goodsName}}</p>
-          <p class="product-feature">{{product.productFeature}}</p>
+          <p class="product-feature">{{product.goodsSubtitle}}</p>
           <p class="product-sale">
-            <span class="discounted-price">￥{{product.goodsPrice}}</span>
-            <span class="original-price">￥{{product.goodsRetailPrice}}</span>
-            <span class="sale-number">已购{{product.payTotal}}件</span>
+            <span class="discounted-price">￥{{product.goodsRetailPrice}}</span>
+            <span class="original-price">￥{{product.goodsRetailPrice + 200}}</span>
+            <span class="sale-number">已购{{product.salesVolume}}件</span>
             <span class="buy">去购买</span>
           </p>
         </div>
@@ -80,7 +80,9 @@ export default {
           text: "加载中...",
           spinnerType: "fading-circle"
         });
-        this.recommendedProducts = await this.$api.goods.goodsList();
+        const res = await this.$api.goods.goodsList({ type: "all" });
+        console.log(res);
+        this.recommendedProducts = res;
         this.$indicator.close();
       } catch (e) {
         console.log("​catch -> e", e);
@@ -89,10 +91,10 @@ export default {
       }
     },
     buy(goodsId) {
-      this.$router.push(`/sort/details/${goodsId}`);
+      this.$router.push(`/common/detail/${goodsId}`);
     }
   },
-  async mounted() {
+  mounted() {
     this.init();
   }
 };

@@ -1,19 +1,37 @@
 <template>
   <div class="order">
-    <mt-navbar v-model="selected">
+    <mt-navbar v-model="selected" fixed>
       <mt-tab-item id="all">全部</mt-tab-item>
       <mt-tab-item id="pendingPayment">待付款</mt-tab-item>
+      <mt-tab-item id="pendingShip">待发货</mt-tab-item>
       <mt-tab-item id="pendingReceipt">待收货</mt-tab-item>
-      <mt-tab-item id="completed">待评价</mt-tab-item>
+      <mt-tab-item id="pendingEvaluation">待评价</mt-tab-item>
     </mt-navbar>
+    <div class="goods-list">
+      <div class="pendingPayment-box goods-box" v-for="goods in order" :key="goods.id">
+        <p class="goods-box-title">
+          <span>壹柯米自营旗舰店</span>
+          <span>等待支付</span>
+        </p>
+        <p class="goods-box-detail" @click="orderDetail(goods.orderId)">
+          <img :src="goods.goodsImg" alt />
+          <span class="goods-name">{{goods.goodsName}}</span>
+          <span class="goods-price">
+            ￥
+            <label>{{goods.goodsPrice}}</label>.00
+          </span>
+        </p>
+        <p class="goods-box-pay">
+          <span @click="pay(goods.orderId)">去支付</span>
+        </p>
+      </div>
+    </div>
 
     <!-- tab-container -->
-    <mt-tab-container v-model="selected">
-      <mt-tab-container-item id="all">
-        <mt-cell v-for="goods in order" :title="goods.goodsName" :key="goods.id" />
-      </mt-tab-container-item>
+    <!-- <mt-tab-container v-model="selected">
+      <mt-tab-container-item id="all"></mt-tab-container-item>
       <mt-tab-container-item id="pendingPayment">
-        <!-- <mt-cell v-for="goods in order" :title="goods.goodsName" :key="goods.id" /> -->
+       <mt-cell v-for="goods in order" :title="goods.goodsName" :key="goods.id" />
         <div class="pendingPayment-box goods-box" v-for="goods in order" :key="goods.id">
           <p class="goods-box-title">
             <span>壹柯米自营旗舰店</span>
@@ -38,7 +56,7 @@
       <mt-tab-container-item id="completed">
         <mt-cell v-for="goods in order" :title="goods.goodsName" :key="goods.id" />
       </mt-tab-container-item>
-    </mt-tab-container>
+    </mt-tab-container>-->
   </div>
 </template>
 
@@ -71,10 +89,10 @@ export default {
       this.selected = this.$route.params.type;
     },
     pay(orderId) {
-      this.$router.push(`/pay/${orderId}`);
+      this.$router.push(`/common/pay/${orderId}`);
     },
     orderDetail(orderId) {
-      this.$router.push(`/home/unpaidOrder/detail/${orderId}`);
+      this.$router.push(`/order/unpaidOrder/detail/${orderId}`);
     }
   },
   mounted() {
@@ -87,8 +105,9 @@ export default {
 .order {
   width: 100%;
   position: absolute;
-  .mint-tab-container {
-    margin-top: 20px;
+  .goods-list {
+    width: 100%;
+    padding-top: 112px;
     .goods-box {
       box-sizing: border-box;
       width: 100%;

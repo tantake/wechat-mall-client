@@ -5,25 +5,30 @@
         <router-view />
       </transition>
     </div>
-    <footer-bar class="footer"></footer-bar>
-    <!-- <img :src="goodsImg" alt=""> -->
+    <Footer class="footer"></Footer>
   </div>
 </template>
 
 <script>
 import Footer from "./components/FooterBar";
-import goodsImg from "@/assets/images/520L-introduce.jpg";
+import goodsImg1 from "@/assets/images/520L-details.jpg";
+import goodsImg2 from "@/assets/images/520L-introduce.jpg";
+import goodsImg3 from "@/assets/images/520L.jpg";
+import goodsImg4 from "@/assets/images/520X.jpg";
 export default {
   name: "App",
   data() {
     return {
       transitionName: "fold-left",
       pathArray: [],
-      goodsImg: goodsImg
+      goodsImg1: goodsImg1,
+      goodsImg2: goodsImg2,
+      goodsImg3: goodsImg3,
+      goodsImg4: goodsImg4,
     };
   },
   components: {
-    "footer-bar": Footer
+    Footer
   },
   watch: {
     $route(to, from) {

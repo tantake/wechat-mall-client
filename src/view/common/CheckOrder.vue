@@ -4,12 +4,12 @@
       <mt-radio class="deliveryMethod" title="配送方式" v-model="value" :options="['快递', '自提']"></mt-radio>
     </header>
     <div class="address-box">
-      <div v-if="false" class="address">
-        <p>{{address.province}}{{address.city}}{{address.county}}</p>
-        <p class="addres-details">{{address.details}}</p>
-        <p>{{address.name}}&nbsp;&nbsp;{{address.phoneNumber}}</p>
+      <div v-if="address.addressId" class="address" @click="chooseAddress">
+        <p>{{address.province}}{{address.city}}{{address.district}}</p>
+        <p class="addres-details">{{address.address}}</p>
+        <p>{{address.uname}}&nbsp;&nbsp;{{address.mobile}}</p>
       </div>
-      <div v-else class="address address-no">
+      <div v-else class="address address-no" @click="chooseAddress">
         <icon-font icon-class="address" />
         <span>添加地址</span>
       </div>
@@ -25,17 +25,19 @@
         />
         <div class="goods-description">
           <p class="goods-name">{{goodsInfo.goodsSubtitle}}</p>
-          <p class="goods-feature">{{buyNowInfo.activeColor}}</p>
+          <p class="goods-feature">{{goodsInfo.color}}</p>
           <div class="goods-choose">
             <span class="goods-price">
-              ￥<label>{{parseInt(goodsInfo.goodsRetailPrice)}}</label>.{{goodsPriceDecimal}}
+              ￥
+              <label>{{parseInt(goodsInfo.goodsRetailPrice)}}</label>
+              .{{goodsPriceDecimal}}
             </span>
             <div class="choose-number">
               <p class="btn-number">
                 <span class="btn-reduce" @click="reduce">
                   <icon-font icon-class="reduce" />
                 </span>
-                <span class="number-box">{{buyNowInfo.number}}</span>
+                <span class="number-box">{{number}}</span>
                 <span class="btn-add" @click="add">
                   <icon-font icon-class="add" />
                 </span>
@@ -57,7 +59,9 @@
     </div>
     <div class="to-pay">
       <span>
-        ￥<label>{{parseInt(totalPrice)}}</label>.{{orderPriceDecimal}}
+        ￥
+        <label>{{parseInt(totalPrice)}}</label>
+        .{{orderPriceDecimal}}
       </span>
       <span class="go-pay" @click="goPay">提交订单</span>
     </div>
@@ -70,20 +74,12 @@ export default {
     return {
       name: "订单结算",
       value: "快递",
-      address: {
-        id: "123",
-        name: "胡卓",
-        phoneNumber: "182****7302",
-        province: "重庆市",
-        city: "市辖区",
-        county: "九龙坡区",
-        details: "保利狮子湖香樟郡6栋二单元"
-      },
+      address: {},
       goodsInfo: {
         goodsRetailPrice: 0,
         shipAmount: 0
       },
-      buyNowInfo: {},
+      number: 0,
       totalPrice: 0
     };
   },
@@ -102,48 +98,68 @@ export default {
     }
   },
   methods: {
+    init() {
+      this.getAddress();
+      this.getGoodsInfo();
+    },
+    newAddress() {
+      alert("选择地址");
+    },
     reduce() {
-      if (this.buyNowInfo.number <= 1) {
-        this.buyNowInfo.number = 1;
+      if (this.number <= 1) {
+        this.number = 1;
         return;
       }
-      this.buyNowInfo.number--;
-      this.totalPrice =
-        this.buyNowInfo.number * this.goodsInfo.goodsRetailPrice;
+      this.number--;
+      this.totalPrice = this.number * this.goodsInfo.goodsRetailPrice;
     },
     add() {
-      if (this.buyNowInfo.number >= this.buyNowInfo.saleNumber) {
-        this.buyNowInfo.number = this.buyNowInfo.saleNumber;
+      if (this.number >= this.goodsInfo.saleNumber) {
+        this.number = this.goodsInfo.saleNumber;
         return;
       }
-      this.buyNowInfo.number++;
-      this.totalPrice =
-        this.buyNowInfo.number * this.goodsInfo.goodsRetailPrice;
+      this.number++;
+      this.totalPrice = this.number * this.goodsInfo.goodsRetailPrice;
     },
     goPay() {
-      this.$router.push("/pay/123");
+      this.$router.push("/common/pay/123");
     },
-    async init() {
-      this.buyNowInfo = await this.$db.getItem("buyNowInfo");
+    getGoodsInfo() {
+      this.goodsInfo = this.$store.getters.buyNowGoodsInfo;
+      this.number = this.goodsInfo.number;
+      this.totalPrice = this.goodsInfo.number * this.goodsInfo.goodsRetailPrice;
+      console.log(this.goodsInfo);
+    },
+    async getAddress() {
       try {
         this.$indicator.open({
           text: "加载中...",
           spinnerType: "fading-circle"
         });
-        this.goodsInfo = await this.$api.goods.goodsDetail({
-          goodsId: this.$route.params.id
-        });
-        this.totalPrice =
-          this.buyNowInfo.number * this.goodsInfo.goodsRetailPrice;
+        const res = await this.$api.address.addressList({ userId: "1" });
+        console.log(res);
+        if (res.length >= 1) {
+          const defaultAddress = this.$lodash.filter(
+            res,
+            arr => arr.isDefault === 1
+          );
+          if (defaultAddress) {
+            this.address = defaultAddress[0];
+          } else {
+            this.address = res[0];
+          }
+        }
+        console.log(this.address);
         this.$indicator.close();
       } catch (e) {
         this.$indicator.close();
         this.$messagebox("", "网络异常");
         console.log("​catch -> e", e);
       }
-    }
+    },
+    chooseAddress() {}
   },
-  async mounted() {
+  mounted() {
     this.init();
   }
 };
@@ -185,6 +201,31 @@ export default {
       /deep/.mint-radio-label {
         margin-left: 2px;
       }
+      /deep/.mint-radio-input:checked + .mint-radio-core {
+        background-color: #f2270c;
+        border-color: #f2270c;
+      }
+      /deep/.mint-radio-input:checked + .mint-radio-core:after {
+        border-color: #fff;
+        background-color: transparent;
+        -webkit-transform: rotate(45deg) scale(1);
+        transform: rotate(45deg) scale(1);
+      }
+      /deep/.mint-radio-core::after {
+        border: 4px solid transparent;
+        border-left: 0;
+        border-top: 0;
+        border-radius: 0px;
+        content: " ";
+        top: 4px;
+        left: 9px;
+        position: absolute;
+        width: 7px;
+        height: 14px;
+      }
+      /deep/.mint-radio-input {
+        outline: none;
+      }
     }
   }
   .address-box {
@@ -203,7 +244,7 @@ export default {
         color: 262626;
       }
       .addres-details {
-        font-size: 30px;
+        font-size: 28px;
         font-weight: bold;
         line-height: 50px;
         margin: 20px 0;
@@ -239,7 +280,7 @@ export default {
         width: 174px;
         height: 174px;
         margin-right: 20px;
-        background-color: red;
+        background-color: #f2270c;
       }
       .goods-description {
         flex: 1;

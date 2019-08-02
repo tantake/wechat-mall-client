@@ -1,5 +1,4 @@
 import router from "../router/index";
-// import $api from '../api/api'
 const GetQueryString = function(name) {
   var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)");
   var r = window.location.search.substr(1).match(reg);
@@ -21,8 +20,11 @@ router.beforeEach(async (to, from, next) => {
     console.log(code);
     if (code !== null) {
       console.log("获取code，请求用户信息");
-      const res = await window.$api.user.getUser({code: code, scope: "snsapi_base"});
-      console.log(res);
+      const res = await window.$api.user.getUser({
+        code: code,
+        scope: "snsapi_base"
+      });
+      await window.$db.setItem("user", res);
       next();
     } else {
       console.log("微信网页授权");

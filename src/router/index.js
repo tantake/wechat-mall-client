@@ -25,25 +25,9 @@ export default new Router({
       component: Sort
     },
     {
-      path: "/sort/details/:id",
-      name: "商品详情",
-      component: () => import("@/view/sort/Details"),
-      meta: {
-        navShow: false
-      }
-    },
-    {
       path: "/car",
       name: "购物车",
       component: Car
-    },
-    {
-      path: "/car/settlement",
-      name: "购物车结算页",
-      component: () => import("@/view/car/Settlement"),
-      meta: {
-        navShow: false
-      }
     },
     {
       path: "/home",
@@ -75,14 +59,6 @@ export default new Router({
       }
     },
     {
-      path: "/order/settlement/:id",
-      name: "结算页",
-      component: () => import("@/view/order/Settlement"),
-      meta: {
-        navShow: false
-      }
-    },
-    {
       path: "/order/unpaidOrder/detail/:id",
       name: "未支付订单详情页",
       component: () => import("@/view/order/UnpaidOrderDetail"),
@@ -91,12 +67,28 @@ export default new Router({
       }
     },
     {
-      path: "/pay/:orderID",
-      name: "支付页面",
-      component: () => import("@/view/common/pay"),
+      path: "/common/detail/:id",
+      name: "商品详情页",
+      component: () => import("@/view/common/Detail"),
       meta: {
         navShow: false
       }
-    }
+    },
+    {
+      path: "/common/checkOrder/:id",
+      name: "结算页",
+      component: () => import("@/view/common/CheckOrder"),
+      meta: {
+        navShow: false
+      }
+    },
+    {
+      path: "/common/pay/:orderID",
+      name: "支付页面",
+      component: () => import("@/view/common/Pay"),
+      meta: {
+        navShow: false
+      }
+    },
   ]
 });

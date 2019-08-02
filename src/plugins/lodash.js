@@ -69,21 +69,22 @@ const myLodash = {
   merge,
   mapValues
 };
-export default {
-  install: (Vue, options) => {
-    Vue.lodash = myLodash;
-    window.lodash = myLodash;
-    Object.defineProperties(Vue.prototype, {
-      lodash: {
-        get() {
-          return myLodash;
-        }
-      },
-      $lodash: {
-        get() {
-          return myLodash;
-        }
+
+Plugin.install = function(Vue, options) {
+  Vue.lodash = myLodash;
+  window.lodash = myLodash;
+  Object.defineProperties(Vue.prototype, {
+    lodash: {
+      get() {
+        return myLodash;
       }
-    });
-  },
+    },
+    $lodash: {
+      get() {
+        return myLodash;
+      }
+    }
+  });
 };
+
+export default Plugin;

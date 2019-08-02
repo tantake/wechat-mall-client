@@ -1,26 +1,23 @@
 <template>
   <div class="address">
     <mt-cell-swipe
-      v-for="(item, index) in address"
-      :key="index"
-      :right="[
-    {
-      content: `删除`,
-      style: { background: 'red', color: '#fff',fontSize:'0.4rem', display:'flex', alignItems:'center', justifyContent:'center', padding:'0 30px'},
-      handler: () => deleteAddress(item.id)
-    }
-  ]"
+      v-for="(item) in address"
+      :key="item.addressId"
+      :right="[{
+          content: `删除`,
+          handler: () => deleteAddress(item.addressId)
+          }]"
     >
       <div slot="title" class="address-details">
         <p class="user-info">
-          <span>{{item.name}}</span>
-          {{item.phoneNumber}}
+          <span>{{item.uname}}</span>
+          {{item.mobile}}
         </p>
         <div class="address-info">
           <span
             class="info"
-          >{{item.province}}{{item.city}}{{item.county}}&nbsp;&nbsp;{{item.details}}</span>
-          <span @click="edit(item.id)">
+          >{{item.province}}{{item.city}}{{item.district}}&nbsp;&nbsp;{{item.address}}</span>
+          <span @click="edit(item.addressId)">
             <icon-font icon-class="edit" />
           </span>
         </div>
@@ -37,50 +34,48 @@
 export default {
   data() {
     return {
-      address: [
-        {
-          id: "123",
-          name: "胡卓",
-          phoneNumber: "182****7302",
-          province: "重庆市",
-          city: "市辖区",
-          county: "九龙坡区",
-          details: "保利狮子湖香樟郡6栋二单元"
-        },
-        {
-          id: "13",
-          name: "徐渊鸿",
-          phoneNumber: "159****5264",
-          province: "北京市",
-          city: "市辖区",
-          county: "西城区",
-          details: "聚金万佳苑"
-        },
-        {
-          id: "23",
-          name: "欧阳潇潇",
-          phoneNumber: "136****7552",
-          province: "北京市",
-          city: "市辖区",
-          county: "西城区",
-          details: "叽里呱啦小区7栋9-9"
-        },
-        {
-          id: "1234",
-          name: "李四买买提啊",
-          phoneNumber: "139****6666",
-          province: "北京市",
-          city: "市辖区",
-          county: "西城区",
-          details: "大渡口政府"
-        }
-      ]
+      address: []
     };
   },
   methods: {
-    deleteAddress(addressID) {
-      console.log(addressID);
-      this.$messagebox.alert("删除成功");
+    init() {
+      this.getAddressList();
+    },
+    async getAddressList() {
+      try {
+        this.$indicator.open({
+          text: "加载中...",
+          spinnerType: "fading-circle"
+        });
+        const res = await this.$api.address.addressList({ userId: "1" });
+        console.log(res);
+        this.address = res;
+        this.$indicator.close();
+      } catch (e) {
+        console.log("​catch -> e", e);
+        this.address = [];
+        this.$indicator.close();
+        this.$messagebox("", "网络异常");
+      }
+    },
+    async deleteAddress(addressID) {
+      try {
+        this.$indicator.open({
+          text: "加载中...",
+          spinnerType: "fading-circle"
+        });
+        await this.$api.address.deleteAddress({ addressId: addressID });
+        const res = await this.$api.address.addressList({userId: "1"});
+        console.log(res);
+        this.address = res;
+        this.$indicator.close();
+        this.$messagebox.alert("删除成功");
+      } catch (e) {
+        console.log("​catch -> e", e);
+        this.address = [];
+        this.$indicator.close();
+        this.$messagebox("", "网络异常");
+      }
     },
     edit(addressID) {
       this.$router.push(`/address/edit/${addressID}`);
@@ -89,16 +84,20 @@ export default {
       this.$router.push(`/address/edit`);
     }
   },
-  created() {}
+  mounted() {
+    this.init();
+  }
 };
 </script>
 
 <style lang="less" scoped>
 .address {
   position: absolute;
+  box-sizing: border-box;
   width: 100%;
-  min-height: 100%;
+  height: 100%;
   background-color: #fff;
+  padding-bottom: 20%;
   header {
     box-sizing: border-box;
     padding: 0 4%;
@@ -124,7 +123,7 @@ export default {
     }
   }
   .address-details {
-    border-bottom: 1px solid #f0f0f0;
+    border-bottom: 1px solid #f0f0f0; /* no */
     padding: 30px 0;
     .user-info {
       font-size: 28px;
@@ -140,6 +139,7 @@ export default {
     }
     .address-info {
       display: flex;
+      align-items: center;
       .info {
         flex: 1;
         font-size: 24px;
@@ -151,24 +151,37 @@ export default {
       }
     }
   }
+  /deep/.mint-cell-wrapper {
+    background-size: 0 0;
+  }
+  /deep/.mint-cell:last-child {
+    background-size: 0 0;
+  }
   .add-btn {
     position: absolute;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     width: 92%;
     height: 76px;
     left: 4%;
-    bottom: 40px;
+    bottom: 3%;
     color: #fff;
-    text-align: center;
-    line-height: 76px;
     background: linear-gradient(to right, #f20100, #ff4d17);
     font-size: 28px;
     border-radius: 100px;
-    .icon-font {
-      vertical-align: middle;
-    }
     span {
-      vertical-align: middle;
+      margin-left: 1%;
     }
+  }
+  /deep/.mint-cell-swipe-button {
+    background: red;
+    color: #fff;
+    font-size: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 30px;
   }
 }
 </style>

@@ -121,7 +121,7 @@ export default {
       this.goodsInfo.number++;
     },
     pay() {
-      this.$router.push("pay/123");
+      this.$router.push("/common/pay/123");
     },
     countDown() {
       this.timer = setInterval(() => {

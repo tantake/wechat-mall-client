@@ -7,9 +7,9 @@
       <mt-tab-item id="sort">
         <icon-font icon-class="menu-sort" />分类
       </mt-tab-item>
-      <mt-tab-item id="car">
+      <!-- <mt-tab-item id="car">
         <icon-font icon-class="menu-car" />购物车
-      </mt-tab-item>
+      </mt-tab-item> -->
       <mt-tab-item id="home">
         <icon-font icon-class="menu-home" />我的
       </mt-tab-item>
