@@ -12,7 +12,6 @@
 </template>
 
 <script>
-import wx from "weixin-jsapi";
 export default {
   data() {
     return {
@@ -23,7 +22,8 @@ export default {
       payTime: 1800,
       minute: "30",
       second: "00",
-      timer: null
+      timer: null,
+      payConfig: {}
     };
   },
   watch: {
@@ -35,7 +35,6 @@ export default {
   methods: {
     init() {
       this.countDown();
-      this.getConfig();
     },
     countDown() {
       this.timer = setInterval(() => {
@@ -46,42 +45,35 @@ export default {
         }
       }, 1000);
     },
-    getConfig() {
-      this.$api.pay.getConfig().then(data => {
-        console.log(wx);
-        wx.config({
-          debug: true, // 开启调试模式,调用的所有api的返回值会在客户端alert出来，若要查看传入的参数，可以在pc端打开，参数信息会通过log打出，仅在pc端时才会打印。
-          appId: data.appId, // 必填，公众号的唯一标识
-          timestamp: data.timestamp, // 必填，生成签名的时间戳
-          nonceStr: data.nonceStr, // 必填，生成签名的随机串
-          signature: data.signature, // 必填，签名，见附录1
-          jsApiList: ["chooseWXPay"]
-        });
+    async pay() {
+      this.payConfig = await this.$api.pay.getConfig({
+        openId: "o9ng05rk9w7i6RmucpS5B-miMEjw",
+        orderSn: "20190801142462826",
+        totalFree: 1,
+        descrption: "测试交易"
       });
+      console.log(this.payConfig);
+      this.onBridgeReady(this.payConfig);
     },
-    pay() {
-      this.$api.pay.getpay({id: 123}).then(data => {
-        var args = data;
-        wx.ready(function() {
-          wx.chooseWXPay({
-            timestamp: args.timeStamp, // 支付签名时间戳，注意微信jssdk中的所有使用timestamp字段均为小写。但最新版的支付后台生成签名使用的timeStamp字段名需大写其中的S字符
-            nonceStr: args.nonceStr, // 支付签名随机串，不长于 32 位
-            package: args.package, // 统一支付接口返回的prepay_id参数值，提交格式如：prepay_id=***）
-            signType: "MD5", // 签名方式，默认为'SHA1'，使用新版支付需传入'MD5'
-            paySign: args.paySign, // 支付签名
-            success: function(res) {
-              window.location.href = "你所要跳转的页面";
-            },
-            cancel: function(res) {
-              alert("已取消支付");
-            },
-            fail: function(res) {
-              alert("购买失败，请重新创建订单");
-            }
-          });
-        });
-      });
-      alert("支付功能暂未打通");
+    onBridgeReady(payConfig) {
+      WeixinJSBridge.invoke(
+        "getBrandWCPayRequest",
+        {
+          appId: payConfig.appid, // 公众号名称，由商户传入
+          timeStamp: payConfig.timeStamp, // 时间戳，自1970年以来的秒数
+          nonceStr: payConfig.nonce_str, // 随机串
+          package: `prepay_id=${payConfig.prepay_id}`,
+          signType: "MD5", // 微信签名方式：
+          paySign: payConfig.sign // 微信签名
+        },
+        function(res) {
+          if (res.err_msg == "get_brand_wcpay_request:ok") {
+            console.log("支付成功");
+          } else {
+            console.log("支付失败");
+          }
+        }
+      );
     }
   },
   mounted() {
@@ -146,16 +138,20 @@ export default {
     height: 32px;
   }
   /deep/.mint-radio-core::after {
-    top: 8px;
-    left: 8px;
-    width: 12px;
-    height: 12px;
+    top: 30%;
+    left: 30%;
+    width: 40%;
+    height: 40%;
   }
   /deep/.mint-radio-label {
     margin-left: 0;
   }
   /deep/.mint-radiolist-title {
     margin-left: 4%;
+  }
+  /deep/.mint-radio-input:checked + .mint-radio-core {
+    background-color: #f2270c;
+    border-color: #f2270c;
   }
 }
 </style>

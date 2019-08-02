@@ -92,7 +92,7 @@ export default {
       this.$router.push(`/common/pay/${orderId}`);
     },
     orderDetail(orderId) {
-      this.$router.push(`/order/unpaidOrder/detail/${orderId}`);
+      this.$router.push(`/order/pendingPayment/detail/${orderId}`);
     }
   },
   mounted() {

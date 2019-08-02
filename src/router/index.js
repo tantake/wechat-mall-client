@@ -59,9 +59,9 @@ export default new Router({
       }
     },
     {
-      path: "/order/unpaidOrder/detail/:id",
+      path: "/order/pendingPayment/detail/:id",
       name: "未支付订单详情页",
-      component: () => import("@/view/order/UnpaidOrderDetail"),
+      component: () => import("@/view/order/PendingPaymentDetail"),
       meta: {
         navShow: false
       }

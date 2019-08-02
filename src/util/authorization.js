@@ -8,10 +8,10 @@ const GetQueryString = function(name) {
   return null;
 };
 router.beforeEach(async (to, from, next) => {
-  const openID = await window.$db.getItem("openID");
-  if (openID) {
-    console.log(openID);
-    console.log("存在openID");
+  const user = await window.$db.getItem("user");
+  if (user) {
+    console.log(user);
+    console.log("存在user");
     next();
   } else {
     console.log(from);
@@ -25,6 +25,8 @@ router.beforeEach(async (to, from, next) => {
         scope: "snsapi_base"
       });
       await window.$db.setItem("user", res);
+      console.log(res);
+      // window.location.href = from;
       next();
     } else {
       console.log("微信网页授权");

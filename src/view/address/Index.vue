@@ -31,6 +31,7 @@
 </template>
 
 <script>
+// import api from "../../api/util";
 export default {
   data() {
     return {
@@ -65,7 +66,7 @@ export default {
           spinnerType: "fading-circle"
         });
         await this.$api.address.deleteAddress({ addressId: addressID });
-        const res = await this.$api.address.addressList({userId: "1"});
+        const res = await this.$api.address.addressList({ userId: "1" });
         console.log(res);
         this.address = res;
         this.$indicator.close();

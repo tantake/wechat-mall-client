@@ -1,25 +1,19 @@
 import axios from "axios";
-import qs from "Qs";
 
 // 创建 axios 实例
 let service = axios.create({
-  headers: {
-    "Content-Type": "application/x-www-form-urlencoded; charset=utf-8;"
-  },
   timeout: 60000
 });
 
 // 设置 post、put 默认 Content-Type
-service.defaults.headers.post["Content-Type"] =
-  "application/x-www-form-urlencoded";
-service.defaults.headers.put["Content-Type"] =
-  "application/x-www-form-urlencoded";
+service.defaults.headers.post['Content-Type'] = 'application/json'
+service.defaults.headers.put['Content-Type'] = 'application/json'
 
 // 添加请求拦截器
 service.interceptors.request.use(
   config => {
     if (config.method === "post" || config.method === "put") {
-      config.data = qs.stringify(config.data);
+      config.data = JSON.stringify(config.data)
       console.log(config);
     }
     // 请求发送前进行处理

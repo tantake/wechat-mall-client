@@ -157,7 +157,10 @@ export default {
         console.log("​catch -> e", e);
       }
     },
-    chooseAddress() {}
+    chooseAddress() {
+      this.$store.dispatch("setBackUrl", "/common/checkOrder");
+      this.$router.push('/address/index');
+    }
   },
   mounted() {
     this.init();

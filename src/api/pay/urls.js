@@ -1,5 +1,5 @@
 const baseUrl = process.env.BASE_API;
 export default {
-  getConfig: baseUrl + "/payConfig",
+  getConfig: baseUrl + "/pay",
   getPay: baseUrl + "/pay"
 };
