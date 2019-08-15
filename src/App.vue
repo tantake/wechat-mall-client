@@ -5,7 +5,7 @@
         <router-view />
       </transition>
     </div>
-    <Footer class="footer"></Footer>
+    <Footer></Footer>
   </div>
 </template>
 
@@ -24,11 +24,8 @@ export default {
       goodsImg1: goodsImg1,
       goodsImg2: goodsImg2,
       goodsImg3: goodsImg3,
-      goodsImg4: goodsImg4,
+      goodsImg4: goodsImg4
     };
-  },
-  components: {
-    Footer
   },
   watch: {
     $route(to, from) {
@@ -43,6 +40,9 @@ export default {
       this.pathArray[1] = toPath;
       this.transitionName = isForward ? "fold-left" : "fold-right";
     }
+  },
+  components: {
+    Footer
   }
 };
 </script>

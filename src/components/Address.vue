@@ -154,6 +154,7 @@ export default {
 </script>
 
 <style lang="less" scoped>
+@deep: ~'>>>';
 .address-picker {
   flex: 1;
   .address-details {
@@ -187,7 +188,7 @@ export default {
       }
       .picker {
         width: 100%;
-        /deep/.picker-slot {
+        @{deep} .picker-slot {
           font-size: 28px;
         }
       }

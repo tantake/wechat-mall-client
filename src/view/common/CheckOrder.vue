@@ -15,53 +15,33 @@
       </div>
       <icon-font icon-class="arrow-right" />
     </div>
-    <div class="goods-box">
+    <div class="goods-box" v-for="(item, index) in goodsList" :key="index">
       <div class="goods-details">
-        <img
-          v-if="goodsInfo.goodsAlbum"
-          :src="goodsInfo.goodsAlbum.goodsShortPic"
-          class="goods-img"
-          alt
-        />
+        <img :src="item.imgUrl" class="goods-img" alt="tupian" />
         <div class="goods-description">
-          <p class="goods-name">{{goodsInfo.goodsSubtitle}}</p>
-          <p class="goods-feature">{{goodsInfo.color}}</p>
-          <div class="goods-choose">
-            <span class="goods-price">
-              ￥
-              <label>{{parseInt(goodsInfo.goodsRetailPrice)}}</label>
-              .{{goodsPriceDecimal}}
-            </span>
-            <div class="choose-number">
-              <p class="btn-number">
-                <span class="btn-reduce" @click="reduce">
-                  <icon-font icon-class="reduce" />
-                </span>
-                <span class="number-box">{{number}}</span>
-                <span class="btn-add" @click="add">
-                  <icon-font icon-class="add" />
-                </span>
-              </p>
-            </div>
-          </div>
+          <p class="goods-name">{{item.goodsSubtitle}}</p>
+          <p class="goods-feature">
+            <span v-for="(attr, index) in item.goodsAttr" :key="index">{{attr.type}}:{{attr.value}}，</span>
+            {{item.goodsNumber}}件
+          </p>
+          <p class="goods-price">￥{{item.goodsRetailPrice.toFixed(2)}}</p>
         </div>
       </div>
     </div>
     <div class="total-price">
       <p>
         <span>商品金额</span>
-        <span>￥{{orderPrice}}</span>
+        <span>￥{{totalPrice.toFixed(2)}}</span>
       </p>
       <p>
         <span>运费</span>
-        <span>+￥{{shipAmountPrice}}</span>
+        <span>+￥0.00</span>
       </p>
     </div>
     <div class="to-pay">
       <span>
         ￥
-        <label>{{parseInt(totalPrice)}}</label>
-        .{{orderPriceDecimal}}
+        <label>{{totalPrice.toFixed(2)}}</label>
       </span>
       <span class="go-pay" @click="goPay">提交订单</span>
     </div>
@@ -75,27 +55,10 @@ export default {
       name: "订单结算",
       value: "快递",
       address: {},
-      goodsInfo: {
-        goodsRetailPrice: 0,
-        shipAmount: 0
-      },
-      number: 0,
+      goodsList: [],
+      order: {},
       totalPrice: 0
     };
-  },
-  computed: {
-    orderPriceDecimal() {
-      return (this.totalPrice.toFixed(2) + "").split(".")[1];
-    },
-    goodsPriceDecimal() {
-      return (this.goodsInfo.goodsRetailPrice.toFixed(2) + "").split(".")[1];
-    },
-    orderPrice() {
-      return this.totalPrice.toFixed(2);
-    },
-    shipAmountPrice() {
-      return this.goodsInfo.shipAmount.toFixed(2);
-    }
   },
   methods: {
     init() {
@@ -105,61 +68,90 @@ export default {
     newAddress() {
       alert("选择地址");
     },
-    reduce() {
-      if (this.number <= 1) {
-        this.number = 1;
-        return;
+    async goPay() {
+      const user = this.$store.getters.userInfo;
+      this.order.orderAmount = this.totalPrice;
+      this.order.deliverMethod = "顺丰";
+      this.order.userId = user.userId;
+      this.order.addressId = this.address.addressId;
+      let list = [];
+      this.$lodash.map(this.goodsList, item => {
+        list.push({
+          goodsId: item.goodsId,
+          attrIdList: item.attrIdList,
+          goodsNum: item.goodsNumber
+        });
+      });
+      this.order.goodsList = list;
+      const res = await this.$api.order.generateOrders(this.order);
+      console.log(res);
+      if (res.code !== 200) {
+        this.$messagebox("提示", "请求失败");
+        return false;
       }
-      this.number--;
-      this.totalPrice = this.number * this.goodsInfo.goodsRetailPrice;
-    },
-    add() {
-      if (this.number >= this.goodsInfo.saleNumber) {
-        this.number = this.goodsInfo.saleNumber;
-        return;
-      }
-      this.number++;
-      this.totalPrice = this.number * this.goodsInfo.goodsRetailPrice;
-    },
-    goPay() {
-      this.$router.push("/common/pay/123");
+      this.$router.push(`/common/pay/${res.data.orderId}`);
     },
     getGoodsInfo() {
-      this.goodsInfo = this.$store.getters.buyNowGoodsInfo;
-      this.number = this.goodsInfo.number;
-      this.totalPrice = this.goodsInfo.number * this.goodsInfo.goodsRetailPrice;
-      console.log(this.goodsInfo);
+      this.goodsList = this.$store.getters.buyGoodsList;
+      console.log(this.goodsList);
+      this.$lodash.map(this.goodsList, item => {
+        this.totalPrice +=
+          Number(item.goodsNumber) * Number(item.goodsRetailPrice);
+      });
     },
     async getAddress() {
-      try {
-        this.$indicator.open({
-          text: "加载中...",
-          spinnerType: "fading-circle"
-        });
-        const res = await this.$api.address.addressList({ userId: "1" });
-        console.log(res);
-        if (res.length >= 1) {
-          const defaultAddress = this.$lodash.filter(
-            res,
-            arr => arr.isDefault === 1
-          );
-          if (defaultAddress) {
-            this.address = defaultAddress[0];
-          } else {
-            this.address = res[0];
+      const addressId = this.$store.getters.shippingAddressId;
+      if (addressId === "") {
+        try {
+          this.$indicator.open({
+            text: "加载中...",
+            spinnerType: "fading-circle"
+          });
+          const user = this.$store.getters.userInfo;
+          const res = await this.$api.address.addressList({
+            userId: user.userId
+          });
+          console.log(res);
+          if (res.length >= 1) {
+            const defaultAddress = this.$lodash.filter(
+              res,
+              arr => arr.isDefault === 1
+            );
+            if (defaultAddress) {
+              this.address = defaultAddress[0];
+            } else {
+              this.address = res[0];
+            }
           }
+          console.log(this.address);
+          this.$indicator.close();
+        } catch (e) {
+          this.$indicator.close();
+          this.$messagebox("", "网络异常");
+          console.log("​catch -> e", e);
         }
-        console.log(this.address);
-        this.$indicator.close();
-      } catch (e) {
-        this.$indicator.close();
-        this.$messagebox("", "网络异常");
-        console.log("​catch -> e", e);
+      } else {
+        try {
+          this.$indicator.open({
+            text: "加载中...",
+            spinnerType: "fading-circle"
+          });
+          const res = await this.$api.address.getAddressById({
+            addressId: addressId
+          });
+          console.log(res);
+          this.address = res;
+          this.$indicator.close();
+        } catch (e) {
+          this.$indicator.close();
+          this.$messagebox("", "网络异常");
+          console.log("​catch -> e", e);
+        }
       }
     },
     chooseAddress() {
       this.$store.dispatch("setBackUrl", "/common/checkOrder");
-      this.$router.push('/address/index');
+      this.$router.push("/address/index");
     }
   },
   mounted() {
@@ -169,9 +161,11 @@ export default {
 </script>
 
 <style lang="less" scoped>
+@deep: ~">>>";
 .billPage {
   width: 100%;
   position: absolute;
+  padding-bottom: 120px;
   header {
     box-sizing: border-box;
     width: 100%;
@@ -181,40 +175,34 @@ export default {
     .deliveryMethod {
       display: flex;
       align-items: center;
-      /deep/ .mint-radiolist-title {
+      @{deep} .mint-radiolist-title {
         font-size: 28px;
         width: 25%;
         text-align: left;
         margin: 0;
         color: #333;
       }
-      /deep/.mint-radio-label {
+      @{deep} .mint-radio-label {
         font-size: 28px;
       }
-      /deep/.mint-radio-core {
+      @{deep} .mint-radio-core {
         width: 32px;
         height: 32px;
       }
-      /deep/.mint-radio-core::after {
-        top: 8px;
-        left: 8px;
-        width: 12px;
-        height: 12px;
-      }
-      /deep/.mint-radio-label {
+      @{deep} .mint-radio-label {
         margin-left: 2px;
       }
-      /deep/.mint-radio-input:checked + .mint-radio-core {
+      @{deep} .mint-radio-input:checked + .mint-radio-core {
         background-color: #f2270c;
         border-color: #f2270c;
       }
-      /deep/.mint-radio-input:checked + .mint-radio-core:after {
+      @{deep} .mint-radio-input:checked + .mint-radio-core:after {
         border-color: #fff;
         background-color: transparent;
         -webkit-transform: rotate(45deg) scale(1);
         transform: rotate(45deg) scale(1);
       }
-      /deep/.mint-radio-core::after {
+      @{deep} .mint-radio-core::after {
         border: 4px solid transparent;
         border-left: 0;
         border-top: 0;
@@ -226,7 +214,7 @@ export default {
         width: 7px;
         height: 14px;
       }
-      /deep/.mint-radio-input {
+      @{deep} .mint-radio-input {
         outline: none;
       }
     }
@@ -273,7 +261,6 @@ export default {
     box-sizing: border-box;
     width: 100%;
     padding: 40px 4%;
-
     background-color: #fff;
     margin-top: 20px;
     border-radius: 16px;
@@ -283,7 +270,7 @@ export default {
         width: 174px;
         height: 174px;
         margin-right: 20px;
-        background-color: #f2270c;
+        background-color: fefefe;
       }
       .goods-description {
         flex: 1;
@@ -304,50 +291,9 @@ export default {
           white-space: nowrap;
           text-overflow: ellipsis;
         }
-        .goods-choose {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          .goods-price {
-            font-size: 24px;
-            font-weight: bold;
-            color: #f2270c;
-            label {
-              font-size: 32px;
-            }
-          }
-          .choose-number {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            .btn-number {
-              display: flex;
-              align-items: center;
-              .btn-reduce {
-                color: #2e2d2d;
-                display: flex;
-                .icon-font {
-                  font-size: 24px;
-                }
-              }
-              .btn-add {
-                color: #2e2d2d;
-                display: flex;
-                .icon-font {
-                  font-size: 24px;
-                }
-              }
-              .number-box {
-                width: 90px;
-                height: 50px;
-                line-height: 50px;
-                margin: 0 20px;
-                font-size: 24px;
-                text-align: center;
-                background-color: #f2f2f2;
-              }
-            }
-          }
+        .goods-price {
+          font-size: 30px;
+          color: #f2270c;
         }
       }
     }

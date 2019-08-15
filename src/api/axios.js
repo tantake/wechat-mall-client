@@ -14,8 +14,8 @@ service.interceptors.request.use(
   config => {
     if (config.method === "post" || config.method === "put") {
       config.data = JSON.stringify(config.data)
-      console.log(config);
     }
+    console.log(config);
     // 请求发送前进行处理
     return config;
   },

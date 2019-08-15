@@ -1,11 +1,11 @@
 <template>
   <div id="sort" class="sort">
     <mt-navbar v-model="type">
-      <mt-tab-item id="all">全部</mt-tab-item>
-      <mt-tab-item id="1">520系列</mt-tab-item>
-      <mt-tab-item id="2">530系列</mt-tab-item>
-      <mt-tab-item id="3">550系列</mt-tab-item>
-      <mt-tab-item id="4">580系列</mt-tab-item>
+      <mt-tab-item id="0">全部</mt-tab-item>
+      <mt-tab-item id="9">520系列</mt-tab-item>
+      <mt-tab-item id="10">530系列</mt-tab-item>
+      <mt-tab-item id="11">550系列</mt-tab-item>
+      <mt-tab-item id="12">580系列</mt-tab-item>
     </mt-navbar>
     <section class="goods-list">
       <div
@@ -35,7 +35,7 @@ import goodsImg from "@/assets/images/520X.jpg";
 export default {
   data() {
     return {
-      type: "all",
+      type: "0",
       productList: [],
       goodsImg: goodsImg
     };
@@ -52,7 +52,7 @@ export default {
           text: "加载中...",
           spinnerType: "fading-circle"
         });
-        const res = await this.$api.goods.goodsList({ type: type });
+        const res = await this.$api.goods.goodsList({ type: Number(type) });
         console.log(res);
         this.productList = res;
         this.$indicator.close();

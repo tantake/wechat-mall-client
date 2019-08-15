@@ -1,5 +1,5 @@
 const baseUrl = process.env.BASE_API;
 export default {
-  getConfig: baseUrl + "/pay",
-  getPay: baseUrl + "/pay"
+  getConfig: baseUrl + "/wechat/getConfig",
+  pay: baseUrl + "/wechat/pay"
 };

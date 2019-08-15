@@ -3,22 +3,20 @@
     <p class="pay-title">壹柯米收银台</p>
     <p class="pay-price">
       ￥
-      <span>{{order.totalPrice}}</span>.00
+      <span>{{order.orderAmount}}</span>.00
     </p>
     <p class="pay-time">剩余支付时间&nbsp;&nbsp;00:{{minute}}:{{second}}</p>
     <mt-radio align="right" title="支付方式" value="微信支付" :options="['微信支付']"></mt-radio>
-    <p class="pay-btn" @click="pay">支付￥{{order.totalPrice}}.00</p>
+    <p class="pay-btn" @click="pay">支付￥{{order.orderAmount}}.00</p>
   </div>
 </template>
 
 <script>
+import wx from "weixin-jsapi";
 export default {
   data() {
     return {
-      order: {
-        id: "123456",
-        totalPrice: 3850
-      },
+      order: {},
       payTime: 1800,
       minute: "30",
       second: "00",
@@ -34,6 +32,7 @@ export default {
   },
   methods: {
     init() {
+      this.getOrder();
       this.countDown();
     },
     countDown() {
@@ -45,35 +44,70 @@ export default {
         }
       }, 1000);
     },
-    async pay() {
-      this.payConfig = await this.$api.pay.getConfig({
-        openId: "o9ng05rk9w7i6RmucpS5B-miMEjw",
-        orderSn: "20190801142462826",
-        totalFree: 1,
-        descrption: "测试交易"
+    async getOrder() {
+      const res = await this.$api.order.getOrderInfo({
+        orderId: this.$route.params.orderID
       });
-      console.log(this.payConfig);
-      this.onBridgeReady(this.payConfig);
+      console.log(res);
+      if (res.code === 200) {
+        this.order = res.data[0];
+        console.log(res.data[0]);
+      } else {
+        this.$messagebox("提示", "网络异常");
+      }
     },
-    onBridgeReady(payConfig) {
-      WeixinJSBridge.invoke(
+    async getConfig() {
+      const res = await this.$api.pay.getConfig();
+      wx.config({
+        debug: true,
+        appId: res.appid,
+        timestamp: res.timestamp,
+        nonceStr: res.noncestr,
+        signature: res.signature,
+        jsApiList: ["chooseWXPay"]
+      });
+      // 检查是否支持调起微信支付
+      wx.ready(function() {
+        wx.checkJsApi({
+          jsApiList: ["chooseWXPay"],
+          success: function(res) {
+            console.log("seccess");
+            console.log(res);
+          },
+          fail: function(res) {
+            console.log("fail");
+            console.log(res);
+          }
+        });
+      });
+    },
+    async pay() {
+      const user = this.$store.getters.userInfo;
+      const orderId = this.$route.params.orderID;
+      console.log(user);
+      const res = await this.$api.pay.pay({
+        openId: user.openid,
+        orderSn: orderId
+      });
+      WeixinJSBridge.invoke(// eslint-disable-line
         "getBrandWCPayRequest",
         {
-          appId: payConfig.appid, // 公众号名称，由商户传入
-          timeStamp: payConfig.timeStamp, // 时间戳，自1970年以来的秒数
-          nonceStr: payConfig.nonce_str, // 随机串
-          package: `prepay_id=${payConfig.prepay_id}`,
-          signType: "MD5", // 微信签名方式：
-          paySign: payConfig.sign // 微信签名
+          appId: res.appId,
+          timeStamp: res.timeStamp,
+          nonceStr: res.nonce_str,
+          package: `prepay_id=${res.prepay_id}`,
+          signType: res.signType,
+          paySign: res.paySign
         },
         function(res) {
           if (res.err_msg == "get_brand_wcpay_request:ok") {
-            console.log("支付成功");
+            this.$router.push(`/common/paySuccess/${orderId}`);
           } else {
-            console.log("支付失败");
+            this.$messagebox("支付失败", "网络异常");
           }
         }
       );
+      console.log(res);
     }
   },
   mounted() {
@@ -83,6 +117,7 @@ export default {
 </script>
 
 <style lang="less" scoped>
+@deep: ~">>>";
 .pay {
   width: 100%;
   position: absolute;
@@ -123,33 +158,33 @@ export default {
     color: #fff;
     font-size: 28px;
   }
-  /deep/ .mint-radiolist-title {
+  @{deep} .mint-radiolist-title {
     font-size: 28px;
     width: 25%;
     text-align: left;
     margin: 0;
     color: #333;
   }
-  /deep/.mint-radio-label {
+  @{deep} .mint-radio-label {
     font-size: 28px;
   }
-  /deep/.mint-radio-core {
+  @{deep} .mint-radio-core {
     width: 32px;
     height: 32px;
   }
-  /deep/.mint-radio-core::after {
+  @{deep} .mint-radio-core::after {
     top: 30%;
     left: 30%;
     width: 40%;
     height: 40%;
   }
-  /deep/.mint-radio-label {
+  @{deep} .mint-radio-label {
     margin-left: 0;
   }
-  /deep/.mint-radiolist-title {
+  @{deep} .mint-radiolist-title {
     margin-left: 4%;
   }
-  /deep/.mint-radio-input:checked + .mint-radio-core {
+  @{deep} .mint-radio-input:checked + .mint-radio-core {
     background-color: #f2270c;
     border-color: #f2270c;
   }

@@ -97,7 +97,8 @@ export default {
             spinnerType: "fading-circle"
           });
           this.address.isDefault = this.defaultAddres;
-          this.address.userId = "1";
+          const user = this.$store.getters.userInfo;
+          this.address.userId = user.userId;
           this.address.country = "中国";
           let res = await this.$api.address.addAddress(this.address);
           console.log(res);

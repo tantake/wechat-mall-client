@@ -1,29 +1,29 @@
 import * as types from '../mutation-types';
 const state = {
   backUrl: "",
-  chooseAddress: {}
+  shippingAddressId: "",
 };
 
 const getters = {
   backUrl: state => state.backUrl,
-  chooseAddress: state => state.chooseAddress,
+  shippingAddressId: state => state.shippingAddressId,
 };
 
 const actions = {
   setBackUrl({ commit }, payload) {
     commit(types.SET_BACK_URL, payload);
   },
-  setChooseAddress({ commit }, payload) {
-    commit(types.SET_CHOOSE_ADDRESS, payload);
+  setShippingAddressId({ commit }, payload) {
+    commit(types.SET_SHIPPING_ADDRESS_ID, payload);
   },
 };
 
 const mutations = {
   [types.SET_BACK_URL](state, payload) {
-    state.backUrl = Number(payload.backUrl);
+    state.backUrl = payload;
   },
-  [types.SET_CHOOSE_ADDRESS](state, payload) {
-    state.chooseAddress = payload;
+  [types.SET_SHIPPING_ADDRESS_ID](state, payload) {
+    state.shippingAddressId = payload;
   },
 };
 

@@ -1,15 +1,41 @@
 <template>
   <div class="billPage">
     <header>
-      <p class="header-title">
-        <icon-font icon-class="clock" />等待付款
-      </p>
-      <p class="price">
-        需付款：￥
-        <span>{{totalPrice}}</span>
-        .00&nbsp;&nbsp;剩余：00小时{{minute}}分钟
-      </p>
-      <p class="pay">去支付</p>
+      <div class="order-status" v-if="noPay">
+        <p class="header-title">
+          <icon-font icon-class="order-pay" />等待付款
+        </p>
+        <p class="info">
+          需付款：￥
+          <span>{{totalPrice}}</span>
+          .00&nbsp;&nbsp;剩余：00小时{{minute}}分钟
+        </p>
+        <p class="order-btn">去支付</p>
+      </div>
+      <div class="order-status" v-else-if="sending">
+        <p class="header-title">
+          <icon-font icon-class="order-send" />等待收货
+        </p>
+        <p class="info">
+          快递已发出，预计<span>2019-08-20</span>以前到底
+        </p>
+        <p class="order-btn">确认收货</p>
+      </div>
+      <div class="order-status" v-else>
+        <p class="header-title" v-if="closed">
+          <icon-font icon-class="order-finished" />已完成
+        </p>
+        <p class="header-title" v-if="canceled">
+          <icon-font icon-class="order-cancel1" />已取消
+        </p>
+        <p class="info" v-if="closed">
+          感谢您的支持
+        </p>
+        <p class="info" v-if="canceled">
+          请再给我一次机会呗~
+        </p>
+        <p class="order-btn">再次购买</p>
+      </div>
       <div class="address-box">
         <icon-font icon-class="address" />
         <div class="address">
@@ -70,10 +96,13 @@
 
 <script>
 import goodsImg from "../../assets/images/520L.jpg";
-// import wx from 'weixin-jsapi'
 export default {
   data() {
     return {
+      noPay: false,
+      sending: false,
+      closed: false,
+      canceled: true,
       name: "订单结算",
       value: "快递",
       address: {
@@ -106,19 +135,9 @@ export default {
     };
   },
   methods: {
-    reduce() {
-      if (this.goodsInfo.number <= 1) {
-        this.goodsInfo.number = 1;
-        return;
-      }
-      this.goodsInfo.number--;
-    },
-    add() {
-      if (this.goodsInfo.number >= this.goodsInfo.saleNumber) {
-        this.goodsInfo.number = this.goodsInfo.saleNumber;
-        return;
-      }
-      this.goodsInfo.number++;
+    init() {
+      this.getOrder();
+      this.countDown();
     },
     pay() {
       this.$router.push("/common/pay/123");
@@ -139,7 +158,7 @@ export default {
     }
   },
   mounted() {
-    this.countDown();
+    this.init();
   }
 };
 </script>
@@ -154,40 +173,42 @@ export default {
     box-sizing: border-box;
     width: 100%;
     height: 480px;
-    padding: 40px 4% 0;
+    padding: 50px 4% 0;
     background: linear-gradient(to right, #f20100, #ff4d17);
     border-radius: 0 0 20px 20px;
-    .header-title {
-      width: 100%;
-      color: #fff;
-      font-size: 40px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      .icon-font {
-        font-size: 46px;
-        margin-right: 6px;
-      }
-    }
-    .price {
-      text-align: center;
-      line-height: 90px;
-      font-size: 24px;
-      color: #fff;
-      span {
+    .order-status {
+      .header-title {
+        width: 100%;
+        color: #fff;
         font-size: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        .icon-font {
+          font-size: 36px;
+          margin-right: 10px;
+        }
       }
-    }
-    .pay {
-      width: 35%;
-      height: 70px;
-      line-height: 70px;
-      background-color: #fff;
-      color: #ff0000;
-      text-align: center;
-      border-radius: 100px;
-      font-size: 24px;
-      margin: 10px auto;
+      .info {
+        text-align: center;
+        line-height: 90px;
+        font-size: 24px;
+        color: #fff;
+        span {
+          font-size: 32px;
+        }
+      }
+      .order-btn {
+        width: 35%;
+        height: 60px;
+        line-height: 60px;
+        background-color: #fff;
+        color: #ff0000;
+        text-align: center;
+        border-radius: 100px;
+        font-size: 24px;
+        margin: 10px auto;
+      }
     }
     .address-box {
       position: absolute;

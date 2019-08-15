@@ -1,6 +1,5 @@
 import Vue from "vue";
 import Vuex from "vuex";
-// import cart from "./modules/cart";
 import user from "./modules/user";
 import address from "./modules/address";
 import goods from "./modules/goods";

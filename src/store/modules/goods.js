@@ -1,28 +1,29 @@
 import * as types from '../mutation-types';
 const state = {
-  buyNowGoodsInfo: {
-    goodsId: "",
-    goodsName: "",
-    goodsSubtitle: "",
-    color: "",
-    number: 0,
-    price: 0,
-  }
+  buyGoodsList: [],
+  cartNumber: 0,
 };
 
 const getters = {
-  buyNowGoodsInfo: state => state.buyNowGoodsInfo,
+  buyGoodsList: state => state.buyGoodsList,
+  cartNumber: state => state.cartNumber,
 };
 
 const actions = {
-  setBuyNowGoodsInfo({ commit }, payload) {
-    commit(types.SET_BUY_NOW_GOODS_INFO, payload);
+  setBuyGoodsList({ commit }, payload) {
+    commit(types.SET_BUY_GOODS_LIST, payload);
+  },
+  setCartNumber({ commit }, payload) {
+    commit(types.SET_CART_NUMBER, payload);
   },
 };
 
 const mutations = {
-  [types.SET_BUY_NOW_GOODS_INFO](state, payload) {
-    state.buyNowGoodsInfo = payload;
+  [types.SET_BUY_GOODS_LIST](state, payload) {
+    state.buyGoodsList = payload;
+  },
+  [types.SET_CART_NUMBER](state, payload) {
+    state.cartNumber = payload;
   },
 };
 

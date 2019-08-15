@@ -75,20 +75,19 @@ export default {
   },
   methods: {
     async init() {
-      try {
-        this.$indicator.open({
-          text: "加载中...",
-          spinnerType: "fading-circle"
-        });
-        const res = await this.$api.goods.goodsList({ type: "all" });
-        console.log(res);
+      this.$indicator.open({
+        text: "加载中...",
+        spinnerType: "fading-circle"
+      });
+      const res = await this.$api.goods.goodsList({ type: 0 });
+      this.$indicator.close();
+      console.log(res);
+      this.recommendedProducts = res;
+      /* if (res.code === 200) {
         this.recommendedProducts = res;
-        this.$indicator.close();
-      } catch (e) {
-        console.log("​catch -> e", e);
-        this.$indicator.close();
+      } else {
         this.$messagebox("", "网络异常");
-      }
+      } */
     },
     buy(goodsId) {
       this.$router.push(`/common/detail/${goodsId}`);
@@ -104,6 +103,7 @@ export default {
 .index {
   position: absolute;
   width: 100%;
+  min-height: 100%;
   .mint-swipe {
     height: 370px;
     .swiper-item a img {

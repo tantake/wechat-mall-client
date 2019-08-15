@@ -11,14 +11,17 @@
       <p class="price">￥{{goodsDetail.goodsRetailPrice}}</p>
     </div>
     <div class="goods-info">
-      <span>运费 ￥{{goodsDetail.shipAmount}}.00</span>
-      <span>库存 {{goodsDetail.goodsStock}}件</span>
+      <span>运费 ￥0.00</span>
+      <span>库存 999件</span>
       <span>销量 5000件</span>
     </div>
     <div class="model-choose" @click="chooseProductModel">
-      <span>已选</span>
-      <span class="model-details">{{buyNowInfo.activeColor}}，{{buyNowInfo.number}}件</span>
-      <span>
+      <span class="title">已选</span>
+      <p class="model-details">
+        <span v-for="item in checkedAttr" :key="item.goodAttrId">{{item.attrName}}:{{item.goodAttrVaule}}，</span>
+        {{goodsNumber}}件
+      </p>
+      <span class="icon">
         <icon-font icon-class="arrow-right" />
       </span>
     </div>
@@ -34,6 +37,7 @@
         <span @click="goCart">
           <icon-font icon-class="menu-car" />
           <br />购物车
+          <label v-if="carNumber !== 0">{{carNumber}}</label>
         </span>
       </div>
       <div class="join-car" @click="joinCart">加入购物车</div>
@@ -54,18 +58,22 @@
           </div>
           <div class="choose-product-info">
             <p class="price">￥{{goodsDetail.goodsRetailPrice}}</p>
-            <p class="inventory">库存{{goodsDetail.goodsStock}}件</p>
+            <p class="inventory">库存999件</p>
           </div>
         </div>
-        <div class="choose-classify">
-          <div class="classify-title">颜色</div>
+        <div
+          class="choose-classify"
+          v-for="(type, typeIndex) in goodsDetail.attrList"
+          :key="type.attrId"
+        >
+          <div class="classify-title">{{type.attrName}}</div>
           <div class="color-btn">
             <p
-              v-for="(item, index) in goodsDetail.attrVal"
-              :key="index"
-              :class="buyNowInfo.color===item ? 'active color-item':'color-item'"
-              @click="chooseColor(item)"
-            >{{item}}</p>
+              v-for="attr in type.goodsAttrList"
+              :key="attr.goodAttrId"
+              :class="checkedAttrId[typeIndex]===attr.goodAttrId ? 'active color-item':'color-item'"
+              @click="chooseModel(attr, typeIndex)"
+            >{{attr.goodAttrVaule}}</p>
           </div>
         </div>
         <div class="choose-number">
@@ -74,7 +82,7 @@
             <span class="btn-reduce" @click="reduce">
               <icon-font icon-class="reduce" />
             </span>
-            <span class="number-box">{{buyNowInfo.number}}</span>
+            <span class="number-box">{{goodsNumber}}</span>
             <span class="btn-add" @click="add">
               <icon-font icon-class="add" />
             </span>
@@ -100,15 +108,22 @@ export default {
   data() {
     return {
       goodsDetail: {},
-      number: 1,
       showChoose: false,
       chooseType: "",
       productColor: "",
-      buyNowInfo: {
-        color: "",
-        number: 1,
-      }
+      checkedAttr: [],
+      checkedAttrId: [],
+      goodsNumber: 1,
+      carInfo: {}
     };
+  },
+  computed: {
+    carNumber() {
+      return this.$store.getters.cartNumber;
+    },
+    userInfo() {
+      return this.$store.getters.userInfo;
+    }
   },
   methods: {
     init() {
@@ -119,9 +134,19 @@ export default {
       this.chooseType = "choose";
     },
     joinCart() {
-      alert("购物车功能暂未开放");
-      /* this.showChoose = true;
-      this.chooseType = "joinCart"; */
+      this.showChoose = true;
+      this.chooseType = "joinCart";
+    },
+    getCarInfo() {
+      this.carInfo.userId = this.userInfo.userId;
+      this.carInfo.attrIdList = this.checkedAttrId;
+      this.carInfo.goodsId = this.goodsDetail.goodsId;
+      this.carInfo.goodsNumber = this.goodsNumber;
+      this.carInfo.goodsRetailPrice = this.goodsDetail.goodsRetailPrice;
+      this.carInfo.goodsName = this.goodsDetail.goodsName;
+      this.carInfo.goodsSn = this.goodsDetail.goodsSn;
+      this.carInfo.imgUrl = this.goodsDetail.goodsAlbum.goodsShortPic;
+      this.carInfo.selected = 0;
     },
     buyNow() {
       this.showChoose = true;
@@ -129,56 +154,75 @@ export default {
     },
     goShopping() {
       this.$router.push("/index");
+      this.$store.dispatch("setCheckedMenu", "index");
     },
     goCart() {
-      alert("购物车功能暂未开放");
+      this.$router.push("/cart");
+      this.$store.dispatch("setCheckedMenu", "cart");
     },
-    chooseColor(item) {
-      this.buyNowInfo.color = item;
+    chooseModel(item, index) {
+      this.checkedAttrId.splice(index, 1, item.goodAttrId);
+      this.checkedAttr[index].goodAttrVaule = item.goodAttrVaule;
     },
     reduce() {
-      if (this.buyNowInfo.number <= 1) {
-        this.buyNowInfo.number = 1;
+      if (this.goodsNumber <= 1) {
+        this.goodsNumber = 1;
         return;
       }
-      this.buyNowInfo.number--;
+      this.goodsNumber--;
     },
     add() {
-      if (this.buyNowInfo.number >= this.goodsDetail.goodsStock) {
-        this.buyNowInfo.number = this.goodsDetail.goodsStock;
-        return;
-      }
-      this.buyNowInfo.number++;
+      this.goodsNumber++;
     },
     finishChoose(type) {
       if (type === "joinCart") {
-        // this.showChoose = false;
-        alert("购物车功能暂未开放");
+        this.getCarInfo();
+        this.$api.goods.joinCar(this.carInfo).then(data => {
+          console.log(data);
+        });
+        this.$store.dispatch("setCartNumber", this.carNumber + 1);
+        this.showChoose = false;
       }
       if (type === "buyNow") {
-        this.$store.dispatch("setBuyNowGoodsInfo", this.buyNowInfo);
-        this.$router.push(`/common/checkOrder/${this.goodsDetail.goodsId}`);
+        let goodsList = [];
+        let goods = {
+          goodsName: this.goodsDetail.goodsName,
+          goodsSubtitle: this.goodsDetail.goodsSubtitle,
+          goodsId: this.goodsDetail.goodsId,
+          attrIdList: this.checkedAttrId,
+          goodsAttr: this.checkedAttr,
+          goodsNumber: this.goodsNumber,
+          imgUrl: this.goodsDetail.goodsAlbum.goodsShortPic,
+          goodsRetailPrice: this.goodsDetail.goodsRetailPrice
+        };
+        goodsList.push(goods);
+        this.$store.dispatch("setBuyGoodsList", goodsList);
+        this.$router.push("/common/checkOrder");
       }
     },
     async getGoodsInfo() {
-      try {
-        this.$indicator.open({
-          text: "加载中...",
-          spinnerType: "fading-circle"
-        });
-        const res = await this.$api.goods.goodsDetail({
-          goodsId: this.$route.params.id
-        });
-        this.goodsDetail = res;
-        this.$lodash.assign(this.buyNowInfo, this.goodsDetail);
-        console.log(this.buyNowInfo);
-        this.buyNowInfo.activeColor = this.goodsDetail.attrVal[0];
-        this.$indicator.close();
-      } catch (e) {
-        this.$indicator.close();
+      this.$indicator.open({
+        text: "加载中...",
+        spinnerType: "fading-circle"
+      });
+      const res = await this.$api.goods.goodsDetail({
+        goodsId: this.$route.params.id
+      });
+      this.$indicator.close();
+      if (res.code !== 200) {
         this.$messagebox("", "网络异常");
-        console.log("​catch -> e", e);
+        return;
       }
+      this.goodsDetail = res.data[0];
+      this.$lodash.map(this.goodsDetail.attrList, (item, index) => {
+        this.checkedAttr[index] = {
+          attrName: item.attrName,
+          goodAttrVaule: item.goodsAttrList[0].goodAttrVaule
+        };
+        this.checkedAttrId.push(item.goodsAttrList[0].goodAttrId);
+      });
+      console.log(this.goodsDetail);
+      console.log(this.checkedAttr);
     }
   },
   mounted() {
@@ -191,11 +235,11 @@ export default {
 .product-details {
   position: absolute;
   width: 100%;
+  min-height: 100%;
   .product-img {
     display: block;
     width: 100%;
     height: 750px;
-    background-color: red;
   }
   .goods-details {
     text-align: left;
@@ -212,7 +256,7 @@ export default {
     }
     .price {
       font-size: 30px;
-      color: #a2313e;
+      color: #f2270c;
       font-weight: bold;
     }
   }
@@ -229,23 +273,26 @@ export default {
     box-sizing: border-box;
   }
   .model-choose {
+    width: 100%;
+    overflow: hidden;
     padding: 20px 4%;
     box-sizing: border-box;
     display: flex;
-    align-items: center;
     background-color: #fff;
-    font-size: 28px;
+    font-size: 0;
     color: #333;
-    span {
-      display: flex;
+    .title,
+    .icon {
+      font-size: 28px;
     }
-    span:first-of-type {
+    .title {
       font-weight: bold;
     }
     .model-details {
       flex: 1;
+      font-size: 28px;
       margin: 0 40px;
-      text-align: justify;
+      overflow: hidden;
     }
     .icon-font {
       font-size: 32px;
@@ -271,11 +318,25 @@ export default {
       justify-content: space-between;
       align-items: center;
       span {
+        position: relative;
         font-size: 24px;
         text-align: center;
         .icon-font {
           font-size: 42px;
         }
+      }
+      label {
+        position: absolute;
+        top: -10px;
+        right: -10%;
+        display: inline-block;
+        line-height: 40px;
+        text-align: center;
+        width: 40px;
+        height: 40px;
+        border-radius: 100%;
+        color: #fff;
+        background-color: #f2270c;
       }
     }
     .join-car,
@@ -340,7 +401,7 @@ export default {
           text-align: left;
           vertical-align: bottom;
           .price {
-            color: #a2313e;
+            color: #f2270c;
             font-weight: bold;
             font-size: 32px;
             margin-bottom: 20px;

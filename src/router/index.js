@@ -2,17 +2,17 @@ import Vue from "vue";
 import Router from "vue-router";
 import Index from "@/view/index/Index";
 import Sort from "@/view/sort/Index";
-import Car from "@/view/car/Index";
+import Cart from "@/view/cart/Index";
 import Home from "@/view/home/Index";
 
 Vue.use(Router);
 
 export default new Router({
-  mode: "history",
+  mode: 'history',
   routes: [
     {
       path: "/",
-      redirect: "/index"
+      redirect: "/index",
     },
     {
       path: "/index",
@@ -25,9 +25,9 @@ export default new Router({
       component: Sort
     },
     {
-      path: "/car",
+      path: "/cart",
       name: "购物车",
-      component: Car
+      component: Cart
     },
     {
       path: "/home",
@@ -59,9 +59,9 @@ export default new Router({
       }
     },
     {
-      path: "/order/pendingPayment/detail/:id",
-      name: "未支付订单详情页",
-      component: () => import("@/view/order/PendingPaymentDetail"),
+      path: "/order/detail/:id",
+      name: "待支付订单详情页",
+      component: () => import("@/view/order/OrderDetail"),
       meta: {
         navShow: false
       }
@@ -75,7 +75,7 @@ export default new Router({
       }
     },
     {
-      path: "/common/checkOrder/:id",
+      path: "/common/checkOrder",
       name: "结算页",
       component: () => import("@/view/common/CheckOrder"),
       meta: {

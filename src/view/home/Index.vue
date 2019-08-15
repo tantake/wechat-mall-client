@@ -1,9 +1,11 @@
 <template>
   <div id="home" class="home">
-    <header :style="{backgroundImage: 'url(' + (coverImgUrl ? coverImgUrl : baseImg) + ')'}">
+    <header
+      :style="{backgroundImage: 'url(' + (user.headimgurl ? user.headimgurl : baseImg) + ')'}"
+    >
       <div class="glass-box">
-        <img :src="avatar" />
-        <p>{{name}}</p>
+        <img :src="user.headimgurl ? user.headimgurl : baseImg" />
+        <p>{{user.nickname}}</p>
       </div>
     </header>
     <section>
@@ -16,27 +18,32 @@
       </div>
       <ul>
         <li>
-          <router-link to="/order/index/pendingPayment">
+          <span v-if="orderNumber.waitPay !== 0" class="wait-pay">{{orderNumber.waitPay}}</span>
+          <router-link to="/order/index/0">
             <icon-font icon-class="wait-pay" />
             <p>待付款</p>
           </router-link>
         </li>
         <li>
-          <router-link to="/order/index/pendingShip">
-            <icon-font icon-class="wait-ship" />
-            <p>待发货</p>
-          </router-link>
-        </li>
-        <li>
-          <router-link to="/order/index/pendingReceipt">
+          <span
+            v-if="orderNumber.waitReceipt !== 0"
+            class="wait-receipt"
+          >{{orderNumber.waitReceipt}}</span>
+          <router-link to="/order/index/2">
             <icon-font icon-class="wait-receipt" />
             <p>待收货</p>
           </router-link>
         </li>
         <li>
-          <router-link to="/order/index/pendingShip">
-            <icon-font icon-class="wait-evaluation" />
-            <p>待评价</p>
+          <router-link to="/order/index/5">
+            <icon-font icon-class="wait-ship" />
+            <p>已完成</p>
+          </router-link>
+        </li>
+        <li>
+          <router-link to="/order/index/-1">
+            <icon-font icon-class="order-cancel" />
+            <p>已取消</p>
           </router-link>
         </li>
       </ul>
@@ -47,19 +54,42 @@
         </router-link>
       </div>
       <div class="menu">
-        <router-link to="/home/address">
+        <a href="http://yikomii.com/mobile/contact.html">
           <icon-font icon-class="contact-us" />
           <span>联系我们</span>
-        </router-link>
+        </a>
       </div>
-      <div class="menu last-menu">
-        <router-link to="/home/address">
+      <div class="menu">
+        <a href="http://yikomii.com">
           <icon-font icon-class="about-us" />
           <span>关于我们</span>
-        </router-link>
+        </a>
+      </div>
+      <div class="menu last-menu" @click="showLogin = true">
+        <a href="#">
+          <icon-font icon-class="role" />
+          <span>切换角色</span>
+          <label>{{roleName}}</label>
+        </a>
       </div>
     </section>
-    <section></section>
+    <div v-if="showLogin" class="login-box">
+      <div class="login">
+        <span @click="showLogin = false" class="login-close">
+          <icon-font icon-class="close" />
+        </span>
+        <p class="login-title">角色切换</p>
+        <div class="login-input">
+          <label>账号：</label>
+          <input v-model="userName" type="text" placeholder="请输入账号" />
+        </div>
+        <div class="login-input">
+          <label>密码：</label>
+          <input v-model="passWord" type="password" placeholder="请输入密码" />
+        </div>
+        <span class="login-btn" @click="login()">切换</span>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -68,25 +98,53 @@ import userImg from "@/assets/images/user.jpg";
 export default {
   data() {
     return {
-      avatar: userImg,
-      name: "胡卓",
-      coverImgUrl: userImg,
-      baseImg: userImg
+      user: {},
+      baseImg: userImg,
+      roleName: "游客",
+      showLogin: false,
+      userName: "",
+      passWord: "",
+      orderNumber: {
+        waitPay: 0,
+        waitReceipt: 0
+      }
     };
   },
   methods: {
-    async banners() {
-      try {
-        let res = await this.$api.index.banners();
-
-        console.log("​getMatches -> res", res);
-      } catch (e) {
-        console.log("​catch -> e", e);
+    init() {
+      this.getUserInfo();
+      this.getOrderNumber();
+    },
+    getUserInfo() {
+      this.user = this.$store.getters.userInfo;
+    },
+    async getOrderNumber() {
+      const res = await this.$api.order.getOrderNumber({
+        userId: this.user.userId
+      });
+      if (res.code === 200) {
+        this.$lodash.assign(this.orderNumber, res.data);
+        this.$store.dispatch("setOrderNumber", this.orderNumber);
+      } else {
+        this.$messagebox("提示", "网络异常");
       }
+    },
+    async login() {
+      if (this.userName !== "" && this.passWord !== "") {
+        const res = await this.$api.user.login({
+          telephone: this.userName,
+          password: this.passWord
+        });
+        this.roleName = res.roleValue;
+        console.log(res);
+      } else {
+        this.$messagebox("切换角色", "请输入账号和密码");
+      }
+      this.showLogin = false;
     }
   },
   created() {
-    this.banners();
+    this.init();
   }
 };
 </script>
@@ -176,6 +234,11 @@ export default {
           vertical-align: middle;
           margin-left: 10px;
         }
+        label {
+          display: block;
+          font-size: 28px;
+          float: right;
+        }
       }
     }
     .last-menu {
@@ -183,14 +246,30 @@ export default {
     }
     ul {
       box-sizing: border-box;
+      display: flex;
       width: 100%;
       height: 140px;
       overflow: hidden;
       border-bottom: 1px solid #dddddd; /* no */
       li {
-        width: 25%;
-        float: left;
+        flex: 1;
         font-size: 0;
+        position: relative;
+        .wait-pay,
+        .wait-receipt {
+          position: absolute;
+          font-size: 24px;
+          top: 5%;
+          right: 20%;
+          display: inline-block;
+          line-height: 40px;
+          text-align: center;
+          width: 36px;
+          height: 36px;
+          border-radius: 100%;
+          color: #fff;
+          background-color: #f2270c;
+        }
         .icon-font {
           font-size: 50px;
           margin-bottom: 15px;
@@ -208,6 +287,66 @@ export default {
             font-size: 24px;
           }
         }
+      }
+    }
+  }
+  .login-box {
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    .login {
+      position: relative;
+      box-sizing: border-box;
+      width: 80%;
+      background-color: #fff;
+      padding: 20px 10% 40px;
+      border-radius: 16px;
+      .login-close {
+        position: absolute;
+        right: 3%;
+        top: 3%;
+        font-size: 32px;
+      }
+      .login-title {
+        text-align: center;
+        font-size: 30px;
+        color: #333;
+        line-height: 70px;
+      }
+      .login-input {
+        display: flex;
+        align-items: center;
+        width: 100%;
+        margin: 50px 0;
+        label {
+          font-size: 28px;
+          margin-right: 10px;
+        }
+        input {
+          flex: 1;
+          outline: none;
+          border-bottom: 1px solid #333; /* no */
+          font-size: 24px;
+        }
+      }
+      .login-btn {
+        display: block;
+        width: 100%;
+        height: 60px;
+        line-height: 60px;
+        text-align: center;
+        border-radius: 100px;
+        color: #fff;
+        font-size: 24px;
+        background: linear-gradient(to right, #f20100, #ff4d17);
       }
     }
   }

@@ -11,5 +11,17 @@ export default {
   // 请求商品详情
   goodsDetail(params) {
     return api.get(urls.goodsDetail, params, header)
-  }
+  },
+  joinCar(params) {
+    return api.post(urls.joinCar, params, header)
+  },
+  cartList(params) {
+    return api.get(urls.cartList, params, header)
+  },
+  cartNumber(params) {
+    return api.get(urls.cartNumber, params, header)
+  },
+  deleteCart(params) {
+    return api.get(urls.deleteCart, params, header)
+  },
 }

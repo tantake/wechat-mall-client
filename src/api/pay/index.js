@@ -9,7 +9,7 @@ export default {
     return api.post(urls.getConfig, params, header)
   },
   // 获取支付参数
-  getPay(params) {
-    return api.post(urls.getPay, params, header)
+  pay(params) {
+    return api.post(urls.pay, params, header)
   }
 }

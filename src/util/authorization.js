@@ -1,21 +1,34 @@
 import router from "../router/index";
-const GetQueryString = function(name) {
+import store from "../store/index";
+/* const GetQueryString = function(name) {
   var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)");
   var r = window.location.search.substr(1).match(reg);
   if (r != null) {
     return unescape(r[2]);
   }
   return null;
-};
+}; */
+router.onError(error => {
+  const pattern = /Loading chunk (\d)+ failed/g;
+  const isChunkLoadFailed = error.message.match(pattern);
+  const targetPath = router.history.pending.fullPath;
+  if (isChunkLoadFailed) {
+    router.replace(targetPath);
+  }
+});
 router.beforeEach(async (to, from, next) => {
-  const user = await window.$db.getItem("user");
-  if (user) {
-    console.log(user);
+  const user = store.getters.userInfo;
+  if (!user.userId) {
+    store.dispatch("setUserInfo", { userId: 1 });
+    const cartNumber = await window.$api.goods.cartNumber({ userId: 1 });
+    store.dispatch("setCartNumber", cartNumber);
+  }
+  next();
+  /* if (user.userId) {
     console.log("存在user");
+    console.log(user);
     next();
   } else {
-    console.log(from);
-    console.log(window.location.href);
     const code = GetQueryString("code");
     console.log(code);
     if (code !== null) {
@@ -24,15 +37,16 @@ router.beforeEach(async (to, from, next) => {
         code: code,
         scope: "snsapi_base"
       });
-      await window.$db.setItem("user", res);
+      store.dispatch("setUserInfo", res);
+      const cartNumber = await window.$api.goods.cartNumber({ userId: res.userId });
+      store.dispatch("setCartNumber", cartNumber);
       console.log(res);
-      // window.location.href = from;
       next();
     } else {
       console.log("微信网页授权");
-      let redirectUrl = "http://mall.foxsun.cn";
+      let redirectUrl = "http://temp.foxsun.cn";
       redirectUrl = encodeURIComponent(redirectUrl);
       window.location.href = `https://open.weixin.qq.com/connect/oauth2/authorize?appid=wx747c3c3fbbc0b823&redirect_uri=${redirectUrl}&response_type=code&scope=snsapi_base&state=123#wechat_redirect`;
     }
-  }
+  } */
 });

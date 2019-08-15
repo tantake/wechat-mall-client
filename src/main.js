@@ -14,7 +14,6 @@ import Mint from "mint-ui";
 import "mint-ui/lib/style.css";
 /* plugins */
 import iconFont from "./plugins/iconfont";
-import vueLocalForage from "./plugins/localforage";
 import lodash from './plugins/lodash';
 /* utils */
 import "./util/authorization";
@@ -22,7 +21,6 @@ import "./util/authorization";
 Vue.use(api);
 Vue.use(Mint);
 Vue.use(iconFont);
-Vue.use(vueLocalForage);
 Vue.use(lodash);
 
 Vue.config.productionTip = false;
