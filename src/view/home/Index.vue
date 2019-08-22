@@ -54,16 +54,16 @@
         </router-link>
       </div>
       <div class="menu">
-        <a href="http://yikomii.com/mobile/contact.html">
+        <router-link to="/home/contact">
           <icon-font icon-class="contact-us" />
           <span>联系我们</span>
-        </a>
+        </router-link>
       </div>
       <div class="menu">
-        <a href="http://yikomii.com">
+        <router-link to="/home/about">
           <icon-font icon-class="about-us" />
           <span>关于我们</span>
-        </a>
+        </router-link>
       </div>
       <div class="menu last-menu" @click="showLogin = true">
         <a href="#">
@@ -153,6 +153,7 @@ export default {
 .home {
   position: absolute;
   width: 100%;
+  min-height: 100%;
   header {
     width: 100%;
     height: 400px;

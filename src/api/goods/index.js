@@ -22,6 +22,6 @@ export default {
     return api.get(urls.cartNumber, params, header)
   },
   deleteCart(params) {
-    return api.get(urls.deleteCart, params, header)
+    return api.post(urls.deleteCart, params, header)
   },
 }

@@ -3,10 +3,10 @@
     <mt-navbar v-model="selected" fixed>
       <mt-tab-item id="all">全部</mt-tab-item>
       <mt-tab-item id="0">
-        <span v-if="orderNumber.waitPay !== 0" class="wait-pay">{{orderNumber.waitPay}}</span>待付款
+        <span v-if="orderNumber.waitPay !== 0&&orderNumber.waitPay !== undefined" class="wait-pay">{{orderNumber.waitPay}}</span>待付款
       </mt-tab-item>
       <mt-tab-item id="2">
-        <span v-if="orderNumber.waitReceipt !== 0" class="wait-receipt">{{orderNumber.waitReceipt}}</span>待收货
+        <span v-if="orderNumber.waitReceipt !== 0&&orderNumber.waitReceipt !== undefined" class="wait-receipt">{{orderNumber.waitReceipt}}</span>待收货
       </mt-tab-item>
       <mt-tab-item id="5">已完成</mt-tab-item>
       <mt-tab-item id="-1">已取消</mt-tab-item>
@@ -30,7 +30,12 @@
               <img :src="goods.imgUrl" alt />
               <div class="goods-detail">
                 <p class="goods-name">{{goods.goodsName}}</p>
-                <p class="goods-type">颜色：{{goods.attrValue}}</p>
+                <p class="goods-type">
+                  <span
+                    v-for="(attr, index) in goods.goodsAttrList"
+                    :key="index"
+                  >{{attr.goodAttrVaule}}&nbsp;&nbsp;</span>
+                </p>
                 <p class="goods-price">
                   <span>￥{{goods.goodsPrice}}</span>
                   <span class="goods-number">x{{goods.goodsNum}}</span>
@@ -107,13 +112,9 @@ export default {
       isLoading: false,
       noOrder: false,
       noMore: false,
-      pageSize: 12,
+      pageSize: 10,
       pageIndex: 1,
-      noImg: noOrder,
-      orderNumber: {
-        waitPay: 0,
-        waitReceipt: 0
-      }
+      noImg: noOrder
     };
   },
   watch: {
@@ -126,10 +127,17 @@ export default {
       this.getOrderByStatus();
     }
   },
+  computed: {
+    orderNumber() {
+      return this.$store.getters.orderNumber;
+    },
+    userInfo() {
+      return this.$store.getters.userInfo;
+    }
+  },
   methods: {
     init() {
       this.selected = this.$route.params.type;
-      this.orderNumber = this.$store.getters.orderNumber;
     },
     pay(orderId) {
       this.$router.push(`/common/pay/${orderId}`);
@@ -137,25 +145,61 @@ export default {
     shopping() {
       this.$router.push("/index");
     },
-    cancelOrder() {},
-    confirmOrder() {},
+    cancelOrder(orderId) {
+      this.$messagebox.confirm("确认取消订单吗?").then(async () => {
+        const res = await this.$api.order.updateOrderInfoById({
+          orderId: orderId,
+          orderStatus: -1
+        });
+        if (res.code !== 200) {
+          this.$messagebox("", "网络异常");
+        } else {
+          this.selected = "-1";
+          const number = await this.$api.order.getOrderNumber({
+            userId: this.userInfo.userId
+          });
+          if (number.code === 200) {
+            this.$store.dispatch("setOrderNumber", number.data);
+            console.log(this.orderNumber);
+          }
+        }
+      });
+    },
+    confirmOrder(orderId) {
+      this.$messagebox.confirm("确认已经收到货物?").then(async () => {
+        const res = await this.$api.order.updateOrderInfoById({
+          orderId: orderId,
+          orderStatus: 5
+        });
+        if (res.code !== 200) {
+          this.$messagebox("", "网络异常");
+        } else {
+          this.selected = "5";
+          const number = await this.$api.order.getOrderNumber({
+            userId: this.userInfo.userId
+          });
+          if (number.code === 200) {
+            this.$store.dispatch("setOrderNumber", number.data);
+          }
+        }
+      });
+    },
     orderDetail(orderId) {
       this.$router.push(`/order/detail/${orderId}`);
     },
     async getOrderByStatus() {
       console.log(this.pageIndex);
       this.isLoading = true;
-      const user = this.$store.getters.userInfo;
       let res;
       if (this.selected === "all") {
         res = await this.$api.order.getOrderInfo({
-          userId: user.userId,
+          userId: this.userInfo.userId,
           pageSize: this.pageSize,
           pageIndex: this.pageIndex
         });
       } else {
         res = await this.$api.order.getOrderInfo({
-          userId: user.userId,
+          userId: this.userInfo.userId,
           orderStatus: Number(this.selected),
           pageSize: this.pageSize,
           pageIndex: this.pageIndex

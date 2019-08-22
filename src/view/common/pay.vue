@@ -3,11 +3,11 @@
     <p class="pay-title">壹柯米收银台</p>
     <p class="pay-price">
       ￥
-      <span>{{order.orderAmount}}</span>.00
+      <span>{{order.orderAmount}}</span>
     </p>
     <p class="pay-time">剩余支付时间&nbsp;&nbsp;00:{{minute}}:{{second}}</p>
     <mt-radio align="right" title="支付方式" value="微信支付" :options="['微信支付']"></mt-radio>
-    <p class="pay-btn" @click="pay">支付￥{{order.orderAmount}}.00</p>
+    <p class="pay-btn" @click="pay">支付￥{{order.orderAmount}}</p>
   </div>
 </template>
 
@@ -21,7 +21,8 @@ export default {
       minute: "30",
       second: "00",
       timer: null,
-      payConfig: {}
+      payConfig: {},
+      payResult: ""
     };
   },
   watch: {
@@ -46,15 +47,15 @@ export default {
     },
     async getOrder() {
       const res = await this.$api.order.getOrderInfo({
-        orderId: this.$route.params.orderID
+        orderId: Number(this.$route.params.orderID)
       });
-      console.log(res);
       if (res.code === 200) {
         this.order = res.data[0];
         console.log(res.data[0]);
       } else {
         this.$messagebox("提示", "网络异常");
       }
+      return res.data[0];
     },
     async getConfig() {
       const res = await this.$api.pay.getConfig();
@@ -82,12 +83,13 @@ export default {
       });
     },
     async pay() {
+      const that = this;
       const user = this.$store.getters.userInfo;
       const orderId = this.$route.params.orderID;
       console.log(user);
       const res = await this.$api.pay.pay({
         openId: user.openid,
-        orderSn: orderId
+        orderSn: Number(orderId)
       });
       WeixinJSBridge.invoke(// eslint-disable-line
         "getBrandWCPayRequest",
@@ -101,9 +103,21 @@ export default {
         },
         function(res) {
           if (res.err_msg == "get_brand_wcpay_request:ok") {
-            this.$router.push(`/common/paySuccess/${orderId}`);
+            that.$router.push(`/order/detail/${orderId}`);
+            /* that.$indicator.open({
+              text: "检查订单状态...",
+              spinnerType: "fading-circle"
+            });
+            that.payResult = setInterval(() => {
+              let order = that.getOrder();
+              if (order.orderStatus === 1) {
+                that.$indicator.close();
+                clearInterval(that.payResult);
+                that.$router.push(`/order/detail/${orderId}`);
+              }
+            }, 2000); */
           } else {
-            this.$messagebox("支付失败", "网络异常");
+            that.$messagebox("支付失败", "网络异常");
           }
         }
       );

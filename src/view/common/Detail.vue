@@ -18,7 +18,7 @@
     <div class="model-choose" @click="chooseProductModel">
       <span class="title">已选</span>
       <p class="model-details">
-        <span v-for="item in checkedAttr" :key="item.goodAttrId">{{item.attrName}}:{{item.goodAttrVaule}}，</span>
+        <span v-for="item in checkedAttr" :key="item.goodAttrId">{{item.goodAttrVaule}}&nbsp;&nbsp;</span>
         {{goodsNumber}}件
       </p>
       <span class="icon">
@@ -162,6 +162,7 @@ export default {
     },
     chooseModel(item, index) {
       this.checkedAttrId.splice(index, 1, item.goodAttrId);
+      this.checkedAttr[index].goodAttrId = item.goodAttrId;
       this.checkedAttr[index].goodAttrVaule = item.goodAttrVaule;
     },
     reduce() {
@@ -179,8 +180,12 @@ export default {
         this.getCarInfo();
         this.$api.goods.joinCar(this.carInfo).then(data => {
           console.log(data);
+          if (data.code === 200) {
+            this.$store.dispatch("setCartNumber", this.carNumber + 1);
+          } else {
+            this.$messagebox("加入购物车", "网络异常");
+          }
         });
-        this.$store.dispatch("setCartNumber", this.carNumber + 1);
         this.showChoose = false;
       }
       if (type === "buyNow") {
@@ -190,7 +195,7 @@ export default {
           goodsSubtitle: this.goodsDetail.goodsSubtitle,
           goodsId: this.goodsDetail.goodsId,
           attrIdList: this.checkedAttrId,
-          goodsAttr: this.checkedAttr,
+          goodsAttrList: this.checkedAttr,
           goodsNumber: this.goodsNumber,
           imgUrl: this.goodsDetail.goodsAlbum.goodsShortPic,
           goodsRetailPrice: this.goodsDetail.goodsRetailPrice
@@ -210,19 +215,18 @@ export default {
       });
       this.$indicator.close();
       if (res.code !== 200) {
-        this.$messagebox("", "网络异常");
+        this.$messagebox("获取商品", "网络异常");
         return;
       }
       this.goodsDetail = res.data[0];
       this.$lodash.map(this.goodsDetail.attrList, (item, index) => {
         this.checkedAttr[index] = {
-          attrName: item.attrName,
+          goodAttrId: item.goodsAttrList[0].goodAttrId,
           goodAttrVaule: item.goodsAttrList[0].goodAttrVaule
         };
         this.checkedAttrId.push(item.goodsAttrList[0].goodAttrId);
       });
       console.log(this.goodsDetail);
-      console.log(this.checkedAttr);
     }
   },
   mounted() {

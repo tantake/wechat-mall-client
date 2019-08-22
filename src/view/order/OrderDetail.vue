@@ -1,59 +1,61 @@
 <template>
   <div class="billPage">
     <header>
-      <div class="order-status" v-if="noPay">
+      <div class="order-status" v-if="orderInfo.orderStatus===0">
         <p class="header-title">
           <icon-font icon-class="order-pay" />等待付款
         </p>
         <p class="info">
           需付款：￥
-          <span>{{totalPrice}}</span>
+          <span>{{orderInfo.orderAmount}}</span>
           .00&nbsp;&nbsp;剩余：00小时{{minute}}分钟
         </p>
-        <p class="order-btn">去支付</p>
+        <p class="order-btn" @click="goPay()">去支付</p>
       </div>
-      <div class="order-status" v-else-if="sending">
+      <div class="order-status" v-else-if="orderInfo.orderStatus===2">
         <p class="header-title">
           <icon-font icon-class="order-send" />等待收货
         </p>
         <p class="info">
-          快递已发出，预计<span>2019-08-20</span>以前到底
+          快递已发出，预计
+          <span>5天之内</span>以前到达
         </p>
-        <p class="order-btn">确认收货</p>
+        <p class="order-btn" @click="confirm()">确认收货</p>
       </div>
       <div class="order-status" v-else>
-        <p class="header-title" v-if="closed">
+        <p class="header-title" v-if="orderInfo.orderStatus===5">
           <icon-font icon-class="order-finished" />已完成
         </p>
-        <p class="header-title" v-if="canceled">
+        <p class="header-title" v-if="orderInfo.orderStatus===-1">
           <icon-font icon-class="order-cancel1" />已取消
         </p>
-        <p class="info" v-if="closed">
-          感谢您的支持
-        </p>
-        <p class="info" v-if="canceled">
-          请再给我一次机会呗~
-        </p>
-        <p class="order-btn">再次购买</p>
+        <p class="info" v-if="orderInfo.orderStatus===5">感谢您的支持</p>
+        <p class="info" v-if="orderInfo.orderStatus===-1">请再给我一次机会呗~</p>
+        <p class="order-btn" @click="shopping()">再次购买</p>
       </div>
       <div class="address-box">
         <icon-font icon-class="address" />
         <div class="address">
-          <p class="addres-user">{{address.name}}&nbsp;&nbsp;{{address.phoneNumber}}</p>
-          <p>地址:{{address.province}}{{address.city}}{{address.county}}{{address.details}}</p>
+          <p class="addres-user">{{orderInfo.consignee}}&nbsp;&nbsp;{{orderInfo.phone}}</p>
+          <p>地址:{{orderInfo.address}}</p>
         </div>
       </div>
     </header>
     <div class="goods-box">
-      <div class="goods-details">
-        <img :src="goodsInfo.img" class="goods-img" alt="goodsImg" />
+      <div class="goods-details" v-for="item in orderInfo.goodsList" :key="item.goodsId">
+        <img :src="item.imgUrl" class="goods-img" alt="goodsImg" />
         <div class="goods-description">
-          <p class="goods-name">{{goodsInfo.name}}</p>
-          <p class="goods-feature">{{goodsInfo.feature}}</p>
+          <p class="goods-name">{{item.goodsName}}</p>
+          <p class="goods-feature">
+            <span
+              v-for="(attr, index) in item.goodsAttrList"
+              :key="index"
+            >{{attr.goodAttrVaule}}&nbsp;&nbsp;</span>
+          </p>
           <div class="goods-choose">
             <span class="goods-price">
               ￥
-              <label>{{goodsInfo.price}}</label>.00
+              <label>{{item.goodsPrice}}</label>.00
             </span>
           </div>
         </div>
@@ -62,85 +64,107 @@
     <div class="order-info">
       <p>
         <span>订单编号：</span>
-        <span>{{order.id}}</span>
+        <span>{{orderInfo.orderSn}}</span>
       </p>
       <p>
         <span>下单时间：</span>
-        <span>{{order.createAt}}</span>
+        <span>{{orderInfo.orderTime}}</span>
       </p>
       <p>
         <span>支付方式：</span>
-        <span>{{order.payType}}</span>
+        <span>线上支付</span>
       </p>
       <p>
         <span>配送方式：</span>
-        <span>{{order.courier}}</span>
+        <span>普通快递</span>
       </p>
     </div>
     <div class="total-price">
       <p>
         <span>商品金额</span>
-        <span>￥{{goodsInfo.price}}.00</span>
+        <span>￥{{orderInfo.orderAmount}}.00</span>
       </p>
       <p>
         <span>运费</span>
-        <span>+￥{{goodsInfo.fare}}.00</span>
+        <span>+￥0.00</span>
       </p>
     </div>
     <div class="pay-box">
-      <span class="cancel">取消订单</span>
-      <span class="pay" @click="pay">去支付</span>
+      <span class="cancel" v-if="orderInfo.orderStatus===0" @click="cancel()">取消订单</span>
+      <span class="pay" v-if="orderInfo.orderStatus===0" @click="goPay()">去支付</span>
+      <span class="pay" v-if="orderInfo.orderStatus===2" @click="confirm()">确认收货</span>
+      <span
+        class="pay"
+        v-if="orderInfo.orderStatus === 5 || orderInfo.orderStatus === -1"
+        @click="shopping()"
+      >再次购买</span>
     </div>
   </div>
 </template>
 
 <script>
-import goodsImg from "../../assets/images/520L.jpg";
 export default {
   data() {
     return {
-      noPay: false,
-      sending: false,
-      closed: false,
-      canceled: true,
-      name: "订单结算",
       value: "快递",
-      address: {
-        id: "123",
-        name: "胡卓",
-        phoneNumber: "182****7302",
-        province: "重庆市",
-        city: "市辖区",
-        county: "九龙坡区",
-        details: "保利狮子湖香樟郡6栋二单元"
-      },
-      goodsInfo: {
-        img: goodsImg,
-        name: "Apple iPhone XS MAX (A2104) 64GB 全网通国行正版手机",
-        feature: "颜色：银色  版本：公开版",
-        price: 8099,
-        number: 1,
-        saleNumber: 7,
-        fare: 0
-      },
-      order: {
-        id: "12345678954126",
-        createAt: "2019-07-23 16:00:00",
-        payType: "线上支付",
-        courier: "普通快递"
-      },
-      totalPrice: 8099,
       payTime: 1800,
-      minute: "30"
+      minute: "30",
+      orderInfo: []
     };
+  },
+  computed: {
+    userInfo() {
+      return this.$store.getters.userInfo;
+    }
   },
   methods: {
     init() {
       this.getOrder();
       this.countDown();
     },
-    pay() {
-      this.$router.push("/common/pay/123");
+    shopping() {
+      this.$router.push("/index");
+    },
+    goPay() {
+      this.$router.push(`/common/pay/${this.orderInfo.orderId}`);
+    },
+    cancel() {
+      this.$messagebox.confirm("确认取消订单吗?").then(async () => {
+        const res = await this.$api.order.updateOrderInfoById({
+          orderId: this.orderInfo.orderId,
+          orderStatus: -1
+        });
+        if (res.code !== 200) {
+          this.$messagebox("", "网络异常");
+        } else {
+          const number = await this.$api.order.getOrderNumber({
+            userId: this.userInfo.userId
+          });
+          if (number.code === 200) {
+            this.$store.dispatch("setOrderNumber", number.data);
+          }
+          this.$router.push("/order/index/-1");
+        }
+      });
+    },
+    confirm() {
+      this.$messagebox.confirm("确认已经收到货物?").then(async () => {
+        const res = await this.$api.order.updateOrderInfoById({
+          orderId: this.orderInfo.orderId,
+          orderStatus: 5
+        });
+        if (res.code !== 200) {
+          this.$messagebox("", "网络异常");
+        } else {
+          const number = await this.$api.order.getOrderNumber({
+            userId: this.userInfo.userId
+          });
+          if (number.code === 200) {
+            this.$store.dispatch("setOrderNumber", number.data);
+          }
+          this.$router.push("/order/index/5");
+        }
+      });
     },
     countDown() {
       this.timer = setInterval(() => {
@@ -150,6 +174,20 @@ export default {
           clearTimeout(this.timer);
         }
       }, 1000);
+    },
+    async getOrder() {
+      this.$indicator.open({
+        text: "加载中...",
+        spinnerType: "fading-circle"
+      });
+      const res = await this.$api.order.getOrderInfo({ orderId: Number(this.$route.params.id) });
+      this.$indicator.close();
+      if (res.code !== 200) {
+        this.$messagebox("", "网络异常");
+        return;
+      }
+      this.orderInfo = res.data[0];
+      console.log(this.orderInfo);
     }
   },
   watch: {
@@ -167,6 +205,7 @@ export default {
 .billPage {
   width: 100%;
   position: absolute;
+  min-height: 100%;
   padding-bottom: 120px;
   header {
     position: relative;
@@ -356,7 +395,7 @@ export default {
       height: 60px;
       border-radius: 100px;
     }
-    span:first-of-type {
+    .cancel {
       border: 1px solid #313030; /* no */
       color: #262626;
     }

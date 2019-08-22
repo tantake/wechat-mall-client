@@ -35,6 +35,22 @@ export default new Router({
       component: Home
     },
     {
+      path: "/home/about",
+      name: "关于我们",
+      component: () => import("@/view/home/About"),
+      meta: {
+        navShow: false
+      }
+    },
+    {
+      path: "/home/contact",
+      name: "联系我们",
+      component: () => import("@/view/home/Contact"),
+      meta: {
+        navShow: false
+      }
+    },
+    {
       path: "/address/index",
       name: "地址管理",
       component: () => import("@/view/address/Index"),

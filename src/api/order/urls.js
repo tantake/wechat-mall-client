@@ -3,5 +3,5 @@ export default {
   generateOrders: baseUrl + "/ReturnOrderId",
   getOrderInfo: baseUrl + "/getOrderInfo",
   getOrderNumber: baseUrl + "/getOrderCountGroupStatus",
-  getOrderById: baseUrl + "/getOrderCountGroupStatus",
+  updateOrderInfoById: baseUrl + "/updateOrderInfoById",
 };

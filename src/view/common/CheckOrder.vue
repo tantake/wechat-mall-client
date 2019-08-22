@@ -1,7 +1,7 @@
 <template>
   <div class="billPage">
     <header>
-      <mt-radio class="deliveryMethod" title="配送方式" v-model="value" :options="['快递', '自提']"></mt-radio>
+      <mt-radio class="deliveryMethod" title="配送方式" v-model="value" :options="['快递']"></mt-radio>
     </header>
     <div class="address-box">
       <div v-if="address.addressId" class="address" @click="chooseAddress">
@@ -21,7 +21,10 @@
         <div class="goods-description">
           <p class="goods-name">{{item.goodsSubtitle}}</p>
           <p class="goods-feature">
-            <span v-for="(attr, index) in item.goodsAttr" :key="index">{{attr.type}}:{{attr.value}}，</span>
+            <span
+              v-for="(attr, index) in item.goodsAttrList"
+              :key="index"
+            >{{attr.goodAttrVaule}}&nbsp;&nbsp;</span>
             {{item.goodsNumber}}件
           </p>
           <p class="goods-price">￥{{item.goodsRetailPrice.toFixed(2)}}</p>
@@ -57,7 +60,8 @@ export default {
       address: {},
       goodsList: [],
       order: {},
-      totalPrice: 0
+      totalPrice: 0,
+      cartList: []
     };
   },
   methods: {
@@ -65,11 +69,15 @@ export default {
       this.getAddress();
       this.getGoodsInfo();
     },
-    newAddress() {
-      alert("选择地址");
-    },
     async goPay() {
       const user = this.$store.getters.userInfo;
+      if (this.cartList.length !== 0) {
+        await this.$api.goods.deleteCart({ recIdList: this.cartList });
+        const number = await this.$api.goods.cartNumber({
+          userId: user.userId
+        });
+        this.$store.dispatch("setCartNumber", number);
+      }
       this.order.orderAmount = this.totalPrice;
       this.order.deliverMethod = "顺丰";
       this.order.userId = user.userId;
@@ -83,6 +91,7 @@ export default {
         });
       });
       this.order.goodsList = list;
+      console.log(this.order);
       const res = await this.$api.order.generateOrders(this.order);
       console.log(res);
       if (res.code !== 200) {
@@ -93,7 +102,13 @@ export default {
     },
     getGoodsInfo() {
       this.goodsList = this.$store.getters.buyGoodsList;
+      this.$lodash.map(this.goodsList, item => {
+        if (item.recId !== undefined) {
+          this.cartList.push(item.recId);
+        }
+      });
       console.log(this.goodsList);
+      console.log(this.cartList);
       this.$lodash.map(this.goodsList, item => {
         this.totalPrice +=
           Number(item.goodsNumber) * Number(item.goodsRetailPrice);
@@ -111,7 +126,6 @@ export default {
           const res = await this.$api.address.addressList({
             userId: user.userId
           });
-          console.log(res);
           if (res.length >= 1) {
             const defaultAddress = this.$lodash.filter(
               res,
@@ -123,7 +137,6 @@ export default {
               this.address = res[0];
             }
           }
-          console.log(this.address);
           this.$indicator.close();
         } catch (e) {
           this.$indicator.close();
@@ -139,7 +152,6 @@ export default {
           const res = await this.$api.address.getAddressById({
             addressId: addressId
           });
-          console.log(res);
           this.address = res;
           this.$indicator.close();
         } catch (e) {

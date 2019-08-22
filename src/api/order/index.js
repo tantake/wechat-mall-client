@@ -20,4 +20,7 @@ export default {
   getOrderById(params) {
     return api.get(urls.getOrderById, params, header)
   },
+  updateOrderInfoById(params) {
+    return api.post(urls.updateOrderInfoById, params, header)
+  },
 }

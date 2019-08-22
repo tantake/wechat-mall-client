@@ -19,7 +19,12 @@
           <img :src="item.imgUrl" class="goods-img" alt />
           <div class="goods-description">
             <p class="goods-name">{{item.goodsSubtitle}}</p>
-            <p class="goods-feature">{{item.attrValue}}</p>
+            <p class="goods-feature">
+              <span
+                v-for="(attr, index) in item.goodsAttrList"
+                :key="index"
+              >{{attr.goodAttrVaule}}&nbsp;&nbsp;</span>
+            </p>
             <div class="goods-choose">
               <span class="goods-price">
                 ￥
@@ -121,10 +126,17 @@ export default {
         text: "加载中...",
         spinnerType: "fading-circle"
       });
-      const res = await this.$api.goods.cartList({ userId: this.userInfo.userId });
+      const res = await this.$api.goods.cartList({
+        userId: this.userInfo.userId
+      });
       this.$indicator.close();
-      this.car = res;
-      console.log(res);
+
+      if (res.code !== 200) {
+        this.$messagebox("提示", "网络异常");
+        return false;
+      }
+      this.car = res.data;
+      console.log(this.car);
     },
     checkedAll() {
       this.checked = !this.checked;
@@ -135,7 +147,7 @@ export default {
       }
     },
     async deleteGoods(id) {
-      const res = await this.$api.goods.deleteCart({ recId: id });
+      const res = await this.$api.goods.deleteCart({ recIdList: [id] });
       console.log(res);
       let deleteIndex = 0;
       this.$lodash.map(this.car, (item, index) => {
@@ -146,7 +158,9 @@ export default {
       this.car.splice(deleteIndex, 1);
       console.log("shanchu");
       console.log(this.car);
-      const number = await this.$api.goods.cartNumber({ userId: this.userInfo.userId });
+      const number = await this.$api.goods.cartNumber({
+        userId: this.userInfo.userId
+      });
       this.$store.dispatch("setCartNumber", number);
     },
     reduce(id) {
@@ -181,7 +195,7 @@ export default {
           Number(item.goodsNumber) * Number(item.goodsRetailPrice);
       });
     },
-    goPay() {
+    async goPay() {
       if (this.checkedList.length === 0) {
         this.$messagebox("购物车", "您还没有选择任何商品");
       } else {
